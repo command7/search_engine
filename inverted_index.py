@@ -77,15 +77,13 @@ class InvertedIndex(DocumentProcessing):
     def __repr__(self):
         output = ""
         for i in range(0, len(self.terms)):
-            output += "{}\t".format(self.terms[i])
+            output += "{:>12}\t".format(self.terms[i])
             doclist = self.posting_lists[i]
             for j in range(0, len(doclist)):
                 output += "[{}]".format(doclist[j].id)
-                output += " < "
-                output += str(doclist[j].position)
-                # for position in doclist[j].position:
-                #     output += "{}, ".format(position)
-                output += " >\t"
+                output += " <"
+                output += "{}, ".format(str(doclist[j].position))
+                output += ">\t"
             output += "\n"
         return output
 
