@@ -32,6 +32,10 @@ class DocumentProcessing():
         stemmed_words = [stemmer.stem(word) for word in filtered_words]
         return stemmed_words
 
+    def get_postings_list(self, term):
+        term_index = self.terms.index(term)
+        return self.posting_lists[term_index]
+
 
 class InvertedIndex(DocumentProcessing):
     num_documents = 0
@@ -104,12 +108,12 @@ class SearchEngine(DocumentProcessing):
                 all_terms_exist = False
         if all_terms_exist:
             if len(processed_query) == 2:
-                term_one_index = self.terms.index(processed_query[0])
-                term_two_index = self.terms.index(processed_query[1])
-                posting_list_one = self.posting_lists[term_one_index]
-                posting_list_two = self.posting_lists[term_two_index]
+                posting_list_one = self.get_postings_list(processed_query[0])
+                posting_list_two = self.get_postings_list(processed_query[1])
                 query_results = self.merge_intersect(posting_list_one, posting_list_two)
             # elif (len(processed_query) > 2):
+            #
+            #     posting_list_one =
             #     query = processed_query.pop(0)
             #     query_results = self.merge_intersect(query, processed_query.pop(0))
             #     while len(query_results) > 0 and len(processed_query) > 0:
