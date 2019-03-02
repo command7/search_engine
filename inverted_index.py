@@ -5,6 +5,7 @@ import os
 from string import punctuation
 from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer
+import operator
 
 
 class Document():
@@ -97,7 +98,8 @@ class SearchEngine(DocumentProcessing):
         self.posting_lists = inverted_index.posting_lists
 
     def boolean_and_query(self, query):
-        processed_query = self.pre_process(query)
+        tokenized_query = self.pre_process(query)
+        processed_query = self.sort_on_tf(tokenized_query)
         query_results = None
         all_terms_exist = True
         for token in processed_query:
@@ -118,6 +120,16 @@ class SearchEngine(DocumentProcessing):
         else:
             return None
         return query_results
+
+    def sort_on_tf(self, query_tokens):
+        tf_info = {}
+        sorted_terms = []
+        for token in query_tokens:
+            tf_info[token] = len(self.get_postings_list(token))
+        sorted_words = sorted(tf_info.items(), key=operator.itemgetter(1))
+        for term_info in sorted_words:
+            sorted_terms.append(term_info[0])
+        return sorted_terms
 
     def positional_search(self, query):
         processed_query = self.pre_process(query)
@@ -207,8 +219,9 @@ if __name__ == "__main__":
         print(i)
     print(inv_index)
     engine = SearchEngine(inv_index)
-    # merged_documents = engine.boolean_and_query("nlp text mining")
-    position_docs = engine.positional_search("data big")
-    engine.print_search_results(position_docs)
+    merged_documents = engine.boolean_and_query("text warehousing")
+    engine.print_search_results(merged_documents)
+    # position_docs = engine.positional_search("data big")
+    # engine.print_search_results(position_docs)
 
 
