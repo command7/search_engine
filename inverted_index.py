@@ -119,6 +119,29 @@ class SearchEngine(DocumentProcessing):
             return None
         return query_results
 
+    def positional_search(self, query):
+        processed_query = self.pre_process(query)
+        query_results = None
+        all_terms_exist = True
+        for token in processed_query:
+            if (self.check_existence(token) == False):
+                all_terms_exist = False
+        if all_terms_exist:
+            if len(processed_query) == 2:
+                posting_list_one = self.get_postings_list(processed_query[0])
+                posting_list_two = self.get_postings_list(processed_query[1])
+                query_results = self.positional_intersect(posting_list_one, posting_list_two)
+            elif (len(processed_query) > 2):
+                posting_list_one = self.get_postings_list(processed_query.pop(0))
+                posting_list_two = self.get_postings_list(processed_query.pop(0))
+                query_results = self.positional_intersect(posting_list_one, posting_list_two)
+                while len(query_results) > 0 and len(processed_query) > 0:
+                    posting_list_ = self.get_postings_list(processed_query.pop(0))
+                    query_results = self.positional_intersect(query_results, posting_list_)
+        else:
+            return None
+        return query_results
+
     def merge_intersect(self, post_list_one, post_list_two):
         intersect_documents = []
         pointer_one = 0
@@ -182,7 +205,7 @@ if __name__ == "__main__":
     print(inv_index)
     engine = SearchEngine(inv_index)
     # merged_documents = engine.boolean_and_query("nlp text mining")
-    position_docs = engine.positional_intersect(engine.get_postings_list("nlp"), engine.get_postings_list("text"))
+    position_docs = engine.positional_search("data big")
     engine.print_search_results(position_docs)
 
 
