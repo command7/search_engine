@@ -77,16 +77,17 @@ class InvertedIndex(DocumentProcessing):
 
 class SearchEngine(DocumentProcessing):
     def __init__(self, inverted_index):
-        self.InvertedIndex = inverted_index
+        self.inverted_index = inverted_index
 
     def boolean_and_query(self):
         pass
 
     def merge_intersect(self, term_one, term_two):
+        post_list_one = self.
         pass
 
     def check_existence(self, term):
-        if (term in self.InvertedIndex.terms):
+        if (term in self.inverted_index.terms):
             return True
         return False
 
