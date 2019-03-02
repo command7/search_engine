@@ -99,45 +99,42 @@ class SearchEngine(DocumentProcessing):
         self.documents = inverted_index.documents
         self.posting_lists = inverted_index.posting_lists
 
-    def boolean_and_query(self, query):
-        processed_query = self.pre_process(query)
-        query_results = None
-        all_terms_exist = True
-        for token in processed_query:
-            if (self.check_existence(token) == False):
-                all_terms_exist = False
-        if all_terms_exist:
-            if len(processed_query) == 2:
-                posting_list_one = self.get_postings_list(processed_query[0])
-                posting_list_two = self.get_postings_list(processed_query[1])
-                query_results = self.merge_intersect(posting_list_one, posting_list_two)
-            # elif (len(processed_query) > 2):
-            #
-            #     posting_list_one =
-            #     query = processed_query.pop(0)
-            #     query_results = self.merge_intersect(query, processed_query.pop(0))
-            #     while len(query_results) > 0 and len(processed_query) > 0:
-            #         query_results = self.merge_intersect()
-
-        else:
-            return None
-        return query_results
+    # def boolean_and_query(self, query):
+    #     processed_query = self.pre_process(query)
+    #     query_results = None
+    #     all_terms_exist = True
+    #     for token in processed_query:
+    #         if (self.check_existence(token) == False):
+    #             all_terms_exist = False
+    #     if all_terms_exist:
+    #         if len(processed_query) == 2:
+    #             posting_list_one = self.get_postings_list(processed_query[0])
+    #             posting_list_two = self.get_postings_list(processed_query[1])
+    #             query_results = self.merge_intersect(posting_list_one, posting_list_two)
+    #         elif (len(processed_query) > 2):
+    #             posting_list_one = self.get_postings_list(processed_query.pop(0))
+    #             posting_list_two = self.get_postings_list(processed_query.pop(0))
+    #             query_results = self.merge_intersect(posting_list_one, posting_list_two)
+    #             while len(query_results) > 0 and len(processed_query) > 0:
+    #                 posting_list_ = self.get_postings_list(processed_query.pop(0))
+    #                 query_results = self.merge_intersect(query_results, posting_list_)
+    #     else:
+    #         return None
+    #     return query_results
 
     def merge_intersect(self, post_list_one, post_list_two):
         intersect_documents = []
         pointer_one = 0
         pointer_two = 0
-        while pointer_one < len(post_list_one):
-            while pointer_two < len(post_list_two):
-                if (post_list_one[pointer_one].id == post_list_two[pointer_two].id):
-                    intersect_documents.append(post_list_two[pointer_two])
-                    pointer_one += 1
-                    pointer_two +=1
-                    pass
-                elif (post_list_one[pointer_one].id > post_list_two[pointer_two].id):
-                    pointer_two += 1
-                else:
-                    pointer_one += 1
+        while pointer_one < len(post_list_one) and pointer_two < len(post_list_two):
+            if (post_list_one[pointer_one].id == post_list_two[pointer_two].id):
+                intersect_documents.append(post_list_two[pointer_two])
+                pointer_one += 1
+                pointer_two +=1
+            elif (post_list_one[pointer_one].id > post_list_two[pointer_two].id):
+                pointer_two += 1
+            else:
+                pointer_one += 1
         return intersect_documents
 
     def print_search_results(self, result_docs):
@@ -162,7 +159,7 @@ if __name__ == "__main__":
         print(i)
     print(inv_index)
     engine = SearchEngine(inv_index)
-    merged_documents = engine.boolean_and_query("nlp text")
+    merged_documents = engine.boolean_and_query("nlp text mining")
     engine.print_search_results(merged_documents)
     # print(inv_index.terms)
     # for i in inv_index.posting_lists:
