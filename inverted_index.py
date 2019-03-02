@@ -7,14 +7,11 @@ from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer
 
 
-test_filename = "test.txt"
-
 class Document():
     def __init__(self, document_id, position):
         self.id = document_id
         self.positions = []
         self.add_position(position)
-
 
     def add_position(self, position):
         self.positions.append(position)
@@ -146,8 +143,33 @@ class SearchEngine(DocumentProcessing):
             return True
         return False
 
-    def positional_intersect(self):
-        pass
+    def positional_intersect(self, post_list_one, post_list_two):
+        intersect_documents = []
+        pointer_one = 0
+        pointer_two = 0
+        while pointer_one < len(post_list_one) and pointer_two < len(post_list_two):
+            if (post_list_one[pointer_one].id == post_list_two[pointer_two].id):
+                position_list_1 = post_list_one[pointer_one].positions
+                position_list_2 = post_list_two[pointer_two].positions
+                pos_point_1 = 0
+                pos_point_2 = 0
+                match_found = False
+                while pos_point_1 < len(position_list_1) and match_found == False:
+                    while pos_point_2 < len(position_list_2) and match_found == False:
+                        if position_list_1[pos_point_1] - position_list_2[pos_point_2] == -1:
+                            intersect_documents.append(post_list_two[pointer_two])
+                            match_found = True
+                            break
+                        pos_point_2 += 1
+                    pos_point_2 = 0
+                    pos_point_1 += 1
+                pointer_one += 1
+                pointer_two += 1
+            elif (post_list_one[pointer_one].id > post_list_two[pointer_two].id):
+                pointer_two += 1
+            else:
+                pointer_one += 1
+        return intersect_documents
 
 if __name__ == "__main__":
     inv_index = InvertedIndex()
@@ -159,12 +181,8 @@ if __name__ == "__main__":
         print(i)
     print(inv_index)
     engine = SearchEngine(inv_index)
-    merged_documents = engine.boolean_and_query("nlp text mining")
-    engine.print_search_results(merged_documents)
-    # print(inv_index.terms)
-    # for i in inv_index.posting_lists:
-    #     for j in i:
-    #         print(j.id)
-    #         print(j.position)
+    # merged_documents = engine.boolean_and_query("nlp text mining")
+    position_docs = engine.positional_intersect(engine.get_postings_list("nlp"), engine.get_postings_list("text"))
+    engine.print_search_results(position_docs)
 
 
