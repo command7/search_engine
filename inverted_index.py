@@ -14,6 +14,7 @@ class Document():
         self.id = document_id
         self.position = np.array(position)
 
+
     def add_position(self, position):
         self.position = np.append(self.position, position)
 
@@ -30,17 +31,22 @@ class DocumentProcessing():
         return stemmed_words
 
 class InvertedIndex(DocumentProcessing):
+    num_documents = 0
     def __init__(self):
         self.documents = list()
         self.terms = None
         self.posting_lists = None
 
+    def assign_document_id(self):
+        InvertedIndex.num_documents += 1
+        return InvertedIndex.num_documents
+
     def parse_document(self, file_name):
+        document_id = self.assign_document_id()
         document_text = self.read_text_file(file_name)
         self.add_document(document_text)
         processed_tokens = self.pre_process(document_text)
-        print(processed_tokens)
-        pass
+
 
     def add_document(self, document_content):
         self.documents.append(document_content)
