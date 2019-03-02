@@ -95,11 +95,17 @@ class SearchEngine(DocumentProcessing):
         self.documents = inverted_index.documents
         self.posting_lists = inverted_index.posting_lists
 
-    def boolean_and_query(self):
-        pass
+    def boolean_and_query(self, query):
+        processed_query = self.pre_process(query)
+        all_terms_exist = True
+        for token in processed_query:
+            if (self.check_existence(token) == False):
+                all_terms_exist = False
+        if (all_terms_exist and len(processed_query) == 2):
+            query_results = self.merge_intersect(processed_query[0], processed_query[1])
+        return query_results
 
     def merge_intersect(self, term_one, term_two):
-
         intersect_documents = []
         term_one_index = self.terms.index(term_one)
         term_two_index = self.terms.index(term_two)
@@ -142,7 +148,8 @@ if __name__ == "__main__":
         print(i)
     print(inv_index)
     engine = SearchEngine(inv_index)
-    merged_documents = engine.merge_intersect("nlp", "text")
+    merged_documents = engine.boolean_and_query("nlp text")
+    engine.print_search_results(merged_documents)
     # print(inv_index.terms)
     # for i in inv_index.posting_lists:
     #     for j in i:
