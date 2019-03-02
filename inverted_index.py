@@ -158,8 +158,11 @@ class SearchEngine(DocumentProcessing):
         return intersect_documents
 
     def print_search_results(self, result_docs):
-        for result_doc in result_docs:
-            print(self.documents[result_doc.id-1])
+        if len(result_docs) == 0:
+            print("No documents found.")
+        else:
+            for result_doc in result_docs:
+                print(self.documents[result_doc.id-1])
 
     def check_existence(self, term):
         if (term in self.terms):
