@@ -17,7 +17,19 @@ class Document():
     def add_position(self, position):
         self.position = np.append(self.position, position)
 
-class InvertedIndex():
+class DocumentProcessing():
+    def __init__(self):
+        self.documents = 0
+
+    def pre_process(self, document_content):
+        stop_words = set(stopwords.words('english') + list(punctuation))
+        tokens = nltk.word_tokenize(document_content)
+        filtered_words = [word.lower() for word in tokens if not word in stop_words]
+        stemmer = PorterStemmer()
+        stemmed_words = [stemmer.stem(word) for word in filtered_words]
+        return stemmed_words
+
+class InvertedIndex(DocumentProcessing):
     def __init__(self):
         self.documents = list()
         self.terms = None
@@ -40,15 +52,9 @@ class InvertedIndex():
             whole_doc = doc.read()
         return whole_doc
 
-    def pre_process(self, document_content):
-        stop_words = set(stopwords.words('english') + list(punctuation))
-        tokens = nltk.word_tokenize(document_content)
-        filtered_words = [word.lower() for word in tokens if not word in stop_words]
-        stemmer = PorterStemmer()
-        stemmed_words = [stemmer.stem(word) for word in filtered_words]
-        return stemmed_words
 
     def update_inv_index(self):
+
         pass
 
 
@@ -67,8 +73,6 @@ class SearchEngine():
         pass
 
 if __name__ == "__main__":
-    doc = Document(1,2)
-    doc.add_position(3)
-    # inv_index = InvertedIndex()
-    # inv_index.parse_document(test_filename)
-    # print(inv_index.documents)
+    inv_index = InvertedIndex()
+    inv_index.parse_document(test_filename)
+    print(inv_index.documents)
