@@ -75,15 +75,20 @@ class InvertedIndex(DocumentProcessing):
                 existing_posting_list.append(new_doc)
 
 
-class SearchEngine():
-    def __init__(self):
-        self.InvertedIndex = None
+class SearchEngine(DocumentProcessing):
+    def __init__(self, inverted_index):
+        self.InvertedIndex = inverted_index
 
-    def boolean_query(self):
+    def boolean_and_query(self):
         pass
 
-    def merge_intersect(self):
+    def merge_intersect(self, term_one, term_two):
         pass
+
+    def check_existence(self, term):
+        if (term in self.InvertedIndex.terms):
+            return True
+        return False
 
     def positional_intersect(self):
         pass
