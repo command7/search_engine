@@ -74,6 +74,21 @@ class InvertedIndex(DocumentProcessing):
                 new_doc = Document(document_id, token_index+1)
                 existing_posting_list.append(new_doc)
 
+    def __repr__(self):
+        output = ""
+        for i in range(0, len(self.terms)):
+            output += "{}\t".format(self.terms[i])
+            doclist = self.posting_lists[i]
+            for j in range(0, len(doclist)):
+                output += "[{}]".format(doclist[j].id)
+                output += " < "
+                output += str(doclist[j].position)
+                # for position in doclist[j].position:
+                #     output += "{}, ".format(position)
+                output += " >\t"
+            output += "\n"
+        return output
+
 
 class SearchEngine(DocumentProcessing):
     def __init__(self, inverted_index):
@@ -85,8 +100,12 @@ class SearchEngine(DocumentProcessing):
         pass
 
     def merge_intersect(self, term_one, term_two):
-        term_one_index = self.inverted_index.ter
-        post_list_one = self.inverted_index
+        term_one_index = self.terms.index(term_one)
+        term_two_index = self.terms.index(term_two)
+        post_list_one = self.posting_lists[term_one_index]
+        post_list_two = self.posting_lists[term_two_index]
+        print(post_list_one)
+        print(post_list_two)
         pass
 
     def check_existence(self, term):
@@ -99,11 +118,17 @@ class SearchEngine(DocumentProcessing):
 
 if __name__ == "__main__":
     inv_index = InvertedIndex()
-    inv_index.parse_document(test_filename)
-    print(inv_index.terms)
-    for i in inv_index.posting_lists:
-        for j in i:
-            print(j.id)
-            print(j.position)
+    inv_index.parse_document("test1.txt")
+    inv_index.parse_document("test2.txt")
+    inv_index.parse_document("test3.txt")
+    inv_index.parse_document("test4.txt")
+    print(inv_index)
+    # engine = SearchEngine(inv_index)
+    # engine.merge_intersect("nlp", "text")
+    # print(inv_index.terms)
+    # for i in inv_index.posting_lists:
+    #     for j in i:
+    #         print(j.id)
+    #         print(j.position)
 
 
