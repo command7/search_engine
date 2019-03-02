@@ -65,13 +65,13 @@ class InvertedIndex(DocumentProcessing):
             if (processed_tokens[token_index] not in self.terms):
                 self.terms.append(processed_tokens[token_index])
                 new_postings_list = list()
-                new_doc = Document(document_id, token_index)
+                new_doc = Document(document_id, token_index+1)
                 new_postings_list.append(new_doc)
                 self.posting_lists.append(new_postings_list)
             else:
                 term_index = self.terms.index(processed_tokens[token_index])
                 existing_posting_list = self.posting_lists[token_index]
-                new_doc = Document(document_id, token_index)
+                new_doc = Document(document_id, token_index+1)
                 existing_posting_list.append(new_doc)
 
 
@@ -95,5 +95,6 @@ if __name__ == "__main__":
     for i in inv_index.posting_lists:
         for j in i:
             print(j.id)
+            print(j.position)
 
 
