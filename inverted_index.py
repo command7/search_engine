@@ -120,6 +120,10 @@ class SearchEngine(DocumentProcessing):
                     pointer_one += 1
         return intersect_documents
 
+    def print_search_results(self, result_docs):
+        for result_doc in result_docs:
+            print(self.documents[result_doc.id-1])
+
     def check_existence(self, term):
         if (term in self.terms):
             return True
