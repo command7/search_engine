@@ -12,11 +12,12 @@ test_filename = "test.txt"
 class Document():
     def __init__(self, document_id, position):
         self.id = document_id
-        self.position = np.array(position)
+        self.positions = []
+        self.add_position(position)
 
 
     def add_position(self, position):
-        self.position = np.append(self.position, position)
+        self.positions.append(position)
 
 
 class DocumentProcessing():
@@ -70,7 +71,7 @@ class InvertedIndex(DocumentProcessing):
                 self.posting_lists.append(new_postings_list)
             else:
                 term_index = self.terms.index(processed_tokens[token_index])
-                existing_posting_list = self.posting_lists[token_index]
+                existing_posting_list = self.posting_lists[term_index]
                 new_doc = Document(document_id, token_index+1)
                 existing_posting_list.append(new_doc)
 
@@ -82,7 +83,7 @@ class InvertedIndex(DocumentProcessing):
             for j in range(0, len(doclist)):
                 output += "[{}]".format(doclist[j].id)
                 output += " <"
-                output += "{}, ".format(str(doclist[j].position))
+                output += "{}, ".format(str(doclist[j].positions))
                 output += ">\t"
             output += "\n"
         return output
@@ -98,13 +99,26 @@ class SearchEngine(DocumentProcessing):
         pass
 
     def merge_intersect(self, term_one, term_two):
+
+        intersect_documents = []
         term_one_index = self.terms.index(term_one)
         term_two_index = self.terms.index(term_two)
         post_list_one = self.posting_lists[term_one_index]
         post_list_two = self.posting_lists[term_two_index]
-        print(post_list_one)
-        print(post_list_two)
-        pass
+        pointer_one = 0
+        pointer_two = 0
+        while pointer_one < len(post_list_one):
+            while pointer_two < len(post_list_two):
+                if (post_list_one[pointer_one].id == post_list_two[pointer_two].id):
+                    intersect_documents.append(post_list_two[pointer_two])
+                    pointer_one += 1
+                    pointer_two +=1
+                    pass
+                elif (post_list_one[pointer_one].id > post_list_two[pointer_two].id):
+                    pointer_two += 1
+                else:
+                    pointer_one += 1
+        return intersect_documents
 
     def check_existence(self, term):
         if (term in self.terms):
@@ -120,9 +134,11 @@ if __name__ == "__main__":
     inv_index.parse_document("test2.txt")
     inv_index.parse_document("test3.txt")
     inv_index.parse_document("test4.txt")
+    for i in inv_index.documents:
+        print(i)
     print(inv_index)
-    # engine = SearchEngine(inv_index)
-    # engine.merge_intersect("nlp", "text")
+    engine = SearchEngine(inv_index)
+    merged_documents = engine.merge_intersect("nlp", "text")
     # print(inv_index.terms)
     # for i in inv_index.posting_lists:
     #     for j in i:
