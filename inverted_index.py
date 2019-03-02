@@ -97,20 +97,30 @@ class SearchEngine(DocumentProcessing):
 
     def boolean_and_query(self, query):
         processed_query = self.pre_process(query)
+        query_results = None
         all_terms_exist = True
         for token in processed_query:
             if (self.check_existence(token) == False):
                 all_terms_exist = False
-        if (all_terms_exist and len(processed_query) == 2):
-            query_results = self.merge_intersect(processed_query[0], processed_query[1])
+        if all_terms_exist:
+            if len(processed_query) == 2:
+                term_one_index = self.terms.index(processed_query[0])
+                term_two_index = self.terms.index(processed_query[1])
+                posting_list_one = self.posting_lists[term_one_index]
+                posting_list_two = self.posting_lists[term_two_index]
+                query_results = self.merge_intersect(posting_list_one, posting_list_two)
+            # elif (len(processed_query) > 2):
+            #     query = processed_query.pop(0)
+            #     query_results = self.merge_intersect(query, processed_query.pop(0))
+            #     while len(query_results) > 0 and len(processed_query) > 0:
+            #         query_results = self.merge_intersect()
+
+        else:
+            return None
         return query_results
 
-    def merge_intersect(self, term_one, term_two):
+    def merge_intersect(self, post_list_one, post_list_two):
         intersect_documents = []
-        term_one_index = self.terms.index(term_one)
-        term_two_index = self.terms.index(term_two)
-        post_list_one = self.posting_lists[term_one_index]
-        post_list_two = self.posting_lists[term_two_index]
         pointer_one = 0
         pointer_two = 0
         while pointer_one < len(post_list_one):
