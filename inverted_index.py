@@ -99,28 +99,28 @@ class SearchEngine(DocumentProcessing):
         self.documents = inverted_index.documents
         self.posting_lists = inverted_index.posting_lists
 
-    # def boolean_and_query(self, query):
-    #     processed_query = self.pre_process(query)
-    #     query_results = None
-    #     all_terms_exist = True
-    #     for token in processed_query:
-    #         if (self.check_existence(token) == False):
-    #             all_terms_exist = False
-    #     if all_terms_exist:
-    #         if len(processed_query) == 2:
-    #             posting_list_one = self.get_postings_list(processed_query[0])
-    #             posting_list_two = self.get_postings_list(processed_query[1])
-    #             query_results = self.merge_intersect(posting_list_one, posting_list_two)
-    #         elif (len(processed_query) > 2):
-    #             posting_list_one = self.get_postings_list(processed_query.pop(0))
-    #             posting_list_two = self.get_postings_list(processed_query.pop(0))
-    #             query_results = self.merge_intersect(posting_list_one, posting_list_two)
-    #             while len(query_results) > 0 and len(processed_query) > 0:
-    #                 posting_list_ = self.get_postings_list(processed_query.pop(0))
-    #                 query_results = self.merge_intersect(query_results, posting_list_)
-    #     else:
-    #         return None
-    #     return query_results
+    def boolean_and_query(self, query):
+        processed_query = self.pre_process(query)
+        query_results = None
+        all_terms_exist = True
+        for token in processed_query:
+            if (self.check_existence(token) == False):
+                all_terms_exist = False
+        if all_terms_exist:
+            if len(processed_query) == 2:
+                posting_list_one = self.get_postings_list(processed_query[0])
+                posting_list_two = self.get_postings_list(processed_query[1])
+                query_results = self.merge_intersect(posting_list_one, posting_list_two)
+            elif (len(processed_query) > 2):
+                posting_list_one = self.get_postings_list(processed_query.pop(0))
+                posting_list_two = self.get_postings_list(processed_query.pop(0))
+                query_results = self.merge_intersect(posting_list_one, posting_list_two)
+                while len(query_results) > 0 and len(processed_query) > 0:
+                    posting_list_ = self.get_postings_list(processed_query.pop(0))
+                    query_results = self.merge_intersect(query_results, posting_list_)
+        else:
+            return None
+        return query_results
 
     def merge_intersect(self, post_list_one, post_list_two):
         intersect_documents = []
