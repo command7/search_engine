@@ -1,6 +1,11 @@
+import numpy as np
+from nltk.tokenize import word_tokenize
+import os
+
+test_filename = "bbc/business/001.txt"
 class InvertedIndex:
     def __init__(self):
-        self.documents = None
+        self.documents = list()
         self.terms = None
         self.posting_lists = None
 
@@ -8,9 +13,16 @@ class InvertedIndex:
         pass
 
     def read_text_file(self, filename):
-        pass
+        current_dir = os.getcwd()
+        doc_path = os.path.join(current_dir, filename)
+        with open(doc_path, "r") as doc:
+            whole_doc = doc.read()
+        return whole_doc
+        #     self.documents.append(whole_doc)
+        # return
 
     def pre_process(self):
+
         pass
 
     def update_inv_index(self):
@@ -32,4 +44,6 @@ class SearchEngine:
         pass
 
 if __name__ == "__main__":
-    pass
+    inv_index = InvertedIndex()
+    inv_index.read_text_file(test_filename)
+    print(inv_index.documents)
