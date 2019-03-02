@@ -8,7 +8,16 @@ from nltk.stem import PorterStemmer
 
 
 test_filename = "test.txt"
-class InvertedIndex:
+
+class Document():
+    def __init__(self, document_id, position):
+        self.id = document_id
+        self.position = np.array(position)
+
+    def add_position(self, position):
+        self.position = np.append(self.position, position)
+
+class InvertedIndex():
     def __init__(self):
         self.documents = list()
         self.terms = None
@@ -44,7 +53,7 @@ class InvertedIndex:
 
 
 
-class SearchEngine:
+class SearchEngine():
     def __init__(self):
         self.InvertedIndex = None
 
@@ -58,6 +67,8 @@ class SearchEngine:
         pass
 
 if __name__ == "__main__":
-    inv_index = InvertedIndex()
-    inv_index.parse_document(test_filename)
-    print(inv_index.documents)
+    doc = Document(1,2)
+    doc.add_position(3)
+    # inv_index = InvertedIndex()
+    # inv_index.parse_document(test_filename)
+    # print(inv_index.documents)
