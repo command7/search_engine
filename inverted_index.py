@@ -18,6 +18,7 @@ class Document():
     def add_position(self, position):
         self.position = np.append(self.position, position)
 
+
 class DocumentProcessing():
     def __init__(self):
         self.documents = 0
@@ -30,12 +31,13 @@ class DocumentProcessing():
         stemmed_words = [stemmer.stem(word) for word in filtered_words]
         return stemmed_words
 
+
 class InvertedIndex(DocumentProcessing):
     num_documents = 0
     def __init__(self):
         self.documents = list()
-        self.terms = None
-        self.posting_lists = None
+        self.terms = list()
+        self.posting_lists = list()
 
     def assign_document_id(self):
         InvertedIndex.num_documents += 1
@@ -46,7 +48,7 @@ class InvertedIndex(DocumentProcessing):
         document_text = self.read_text_file(file_name)
         self.add_document(document_text)
         processed_tokens = self.pre_process(document_text)
-
+        self.update_inv_index(processed_tokens, document_id)
 
     def add_document(self, document_content):
         self.documents.append(document_content)
@@ -58,11 +60,19 @@ class InvertedIndex(DocumentProcessing):
             whole_doc = doc.read()
         return whole_doc
 
-
-    def update_inv_index(self):
-
-        pass
-
+    def update_inv_index(self, processed_tokens, document_id):
+        for token_index in range(0, len(processed_tokens)):
+            if (processed_tokens[token_index] not in self.terms):
+                self.terms.append(processed_tokens[token_index])
+                new_postings_list = list()
+                new_doc = Document(document_id, token_index)
+                new_postings_list.append(new_doc)
+                self.posting_lists.append(new_postings_list)
+            else:
+                term_index = self.terms.index(processed_tokens[token_index])
+                existing_posting_list = self.posting_lists[token_index]
+                new_doc = Document(document_id, token_index)
+                existing_posting_list.append(new_doc)
 
 
 class SearchEngine():
@@ -81,4 +91,9 @@ class SearchEngine():
 if __name__ == "__main__":
     inv_index = InvertedIndex()
     inv_index.parse_document(test_filename)
-    print(inv_index.documents)
+    print(inv_index.terms)
+    for i in inv_index.posting_lists:
+        for j in i:
+            print(j.id)
+
+
