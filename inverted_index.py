@@ -7,21 +7,24 @@ from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer
 import operator
 
-
+""" Stores Document ID and positions of a term """
 class Document():
     def __init__(self, document_id, position):
         self.id = document_id
         self.positions = []
         self.add_position(position)
 
+    #Adds a position of a term to the Doc object.
     def add_position(self, position):
         self.positions.append(position)
 
-
+""" Parent class for InvertedIndex and SearchEngine. 
+Deals with preprocessing queries and document text as well as retreiving posting lists."""
 class DocumentProcessing():
     def __init__(self):
         self.documents = 0
 
+    #Remove stop words and perform stemming
     def pre_process(self, document_content):
         stop_words = set(stopwords.words('english') + list(punctuation))
         tokens = nltk.word_tokenize(document_content)
@@ -30,11 +33,12 @@ class DocumentProcessing():
         stemmed_words = [stemmer.stem(word) for word in filtered_words]
         return stemmed_words
 
+    #Returns the postings list of a term
     def get_postings_list(self, term):
         term_index = self.terms.index(term)
         return self.posting_lists[term_index]
 
-
+"""Storage class for parsing documents and constructing inverted index."""
 class InvertedIndex(DocumentProcessing):
     num_documents = 0
     def __init__(self):
@@ -42,10 +46,12 @@ class InvertedIndex(DocumentProcessing):
         self.terms = list()
         self.posting_lists = list()
 
+    #Assign a new document id for new documents
     def assign_document_id(self):
         InvertedIndex.num_documents += 1
         return InvertedIndex.num_documents
 
+    #Parses a new document, preprocesses it and updates the inverted index
     def parse_document(self, file_name):
         document_id = self.assign_document_id()
         document_text = self.read_text_file(file_name)
@@ -53,9 +59,11 @@ class InvertedIndex(DocumentProcessing):
         processed_tokens = self.pre_process(document_text)
         self.update_inv_index(processed_tokens, document_id)
 
+    #Adds the document to storage
     def add_document(self, document_content):
         self.documents.append(document_content)
 
+    #Reads a document and returns its content as a string
     def read_text_file(self, filename):
         current_dir = os.getcwd()
         doc_path = os.path.join(current_dir, filename)
@@ -63,6 +71,7 @@ class InvertedIndex(DocumentProcessing):
             whole_doc = doc.read()
         return whole_doc
 
+    #Add a new term and posting list to inverted index if a new term is found. Update inverted index otherwise.
     def update_inv_index(self, processed_tokens, document_id):
         for token_index in range(0, len(processed_tokens)):
             if (processed_tokens[token_index] not in self.terms):
@@ -72,11 +81,11 @@ class InvertedIndex(DocumentProcessing):
                 new_postings_list.append(new_doc)
                 self.posting_lists.append(new_postings_list)
             else:
-                term_index = self.terms.index(processed_tokens[token_index])
-                existing_posting_list = self.posting_lists[term_index]
+                existing_posting_list = self.get_postings_list(processed_tokens[token_index])
                 new_doc = Document(document_id, token_index+1)
                 existing_posting_list.append(new_doc)
 
+    #Print out inverted index
     def __repr__(self):
         output = ""
         for i in range(0, len(self.terms)):
@@ -91,12 +100,14 @@ class InvertedIndex(DocumentProcessing):
         return output
 
 
+"""Deals with search queries."""
 class SearchEngine(DocumentProcessing):
     def __init__(self, inverted_index):
         self.terms = inverted_index.terms
         self.documents = inverted_index.documents
         self.posting_lists = inverted_index.posting_lists
 
+    #Provide a string query and returns a posting list with Documents containing all the terms
     def boolean_and_query(self, query):
         tokenized_query = self.pre_process(query)
         processed_query = self.sort_on_tf(tokenized_query)
@@ -121,6 +132,7 @@ class SearchEngine(DocumentProcessing):
             return None
         return query_results
 
+    #Returns tokens sorted in terms of document frequency
     def sort_on_tf(self, query_tokens):
         tf_info = {}
         sorted_terms = []
@@ -131,6 +143,7 @@ class SearchEngine(DocumentProcessing):
             sorted_terms.append(term_info[0])
         return sorted_terms
 
+    #Returns documents containing query terms in order
     def positional_search(self, query):
         processed_query = self.pre_process(query)
         query_results = None
@@ -154,6 +167,7 @@ class SearchEngine(DocumentProcessing):
             return None
         return query_results
 
+    #Compare postings lists using merge algorithm
     def merge_intersect(self, post_list_one, post_list_two):
         intersect_documents = []
         pointer_one = 0
@@ -169,6 +183,7 @@ class SearchEngine(DocumentProcessing):
                 pointer_one += 1
         return intersect_documents
 
+    #Prints out search results
     def print_search_results(self, result_docs):
         if len(result_docs) == 0:
             print("No documents found.")
@@ -176,11 +191,13 @@ class SearchEngine(DocumentProcessing):
             for result_doc in result_docs:
                 print(self.documents[result_doc.id-1])
 
+    #Checks if a term exists in dictionary
     def check_existence(self, term):
         if (term in self.terms):
             return True
         return False
 
+    #Compare postings lists to check if terms appear in order
     def positional_intersect(self, post_list_one, post_list_two):
         intersect_documents = []
         pointer_one = 0
