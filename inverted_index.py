@@ -25,13 +25,15 @@ class DocumentProcessing():
         self.documents = 0
 
     #Remove stop words and perform stemming
-    def pre_process(self, document_content):
-        stop_words = set(stopwords.words('english') + list(punctuation))
-        tokens = nltk.word_tokenize(document_content)
-        filtered_words = [word.lower() for word in tokens if not word in stop_words]
-        stemmer = PorterStemmer()
-        stemmed_words = [stemmer.stem(word) for word in filtered_words]
-        return stemmed_words
+    def pre_process(self, document_content, remove_stopwords=False, stemming=False):
+        preprocessed_tokens = nltk.word_tokenize(document_content)
+        if remove_stopwords:
+            stop_words = set(stopwords.words('english') + list(punctuation))
+            preprocessed_tokens = [word.lower() for word in preprocessed_tokens if not word in stop_words]
+        if stemming:
+            stemmer = PorterStemmer()
+            preprocessed_tokens = [stemmer.stem(word) for word in preprocessed_tokens]
+        return preprocessed_tokens
 
     #Returns the postings list of a term
     def get_postings_list(self, term):
@@ -56,7 +58,7 @@ class InvertedIndex(DocumentProcessing):
         document_id = self.assign_document_id()
         document_text = self.read_text_file(file_name)
         self.add_document(document_text)
-        processed_tokens = self.pre_process(document_text)
+        processed_tokens = self.pre_process(document_text, remove_stopwords=True, stemming=True)
         self.update_inv_index(processed_tokens, document_id)
 
     #Adds the document to storage
@@ -109,7 +111,7 @@ class SearchEngine(DocumentProcessing):
 
     #Provide a string query and returns a posting list with Documents containing all the terms
     def boolean_and_query(self, query):
-        tokenized_query = self.pre_process(query)
+        tokenized_query = self.pre_process(query, remove_stopwords=True, stemming=True)
         processed_query = self.sort_on_tf(tokenized_query)
         query_results = None
         all_terms_exist = True
@@ -225,6 +227,9 @@ class SearchEngine(DocumentProcessing):
             else:
                 pointer_one += 1
         return intersect_documents
+
+def train_test_split(directory):
+
 
 if __name__ == "__main__":
     inv_index = InvertedIndex()
