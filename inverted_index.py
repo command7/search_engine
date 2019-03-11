@@ -6,6 +6,7 @@ from string import punctuation
 from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer
 import operator
+import pandas as pd
 
 """ Stores Document ID and positions of a term """
 class Document():
@@ -228,8 +229,24 @@ class SearchEngine(DocumentProcessing):
                 pointer_one += 1
         return intersect_documents
 
-def train_test_split(directory):
 
+    class ClassifierDataFrame():
+        def __init__(self):
+            pass
+
+        def add_document(self, file_name):
+            pass:
+
+
+    class NaiveBayesClassifier():
+        def __init__(self):
+            pass
+
+        def fit(self, training_data):
+            pass
+
+        def predict(self, testing_data):
+            pass
 
 if __name__ == "__main__":
     inv_index = InvertedIndex()
@@ -243,7 +260,7 @@ if __name__ == "__main__":
     engine = SearchEngine(inv_index)
     merged_documents = engine.boolean_and_query("text warehousing")
     engine.print_search_results(merged_documents)
-    # position_docs = engine.positional_search("data big")
-    # engine.print_search_results(position_docs)
+    position_docs = engine.positional_search("data big")
+    engine.print_search_results(position_docs)
 
 
