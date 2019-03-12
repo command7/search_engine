@@ -277,13 +277,6 @@ class ClassifierDataFrame():
             self.y_train = pd.DataFrame(np.reshape(self.target.loc[train_index].values, (-1,1)), columns=["document_contents"])
             self.X_test = pd.DataFrame(np.reshape(self.features.loc[test_index].values, (-1,1)), columns=["document_contents"])
             self.y_test = pd.DataFrame(np.reshape(self.target.loc[test_index].values, (-1,1)), columns=["document_contents"])
-        print(self.X_train.head(1))
-        print(self.y_train.head(1))
-        print(self.X_test.head(1))
-        print(self.y_test.head(1))
-
-
-        # self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(self.features, self.target, test_size=t_size)
 
 
 def load_data(directory, inv_index, classifier_df):
@@ -301,12 +294,19 @@ def load_data(directory, inv_index, classifier_df):
 
 class NaiveBayesClassifier(DocumentProcessing):
     def __init__(self, Classifier_df):
-        self.raw_data = Classifier_df.df
+        self.raw_data = None
+        self.raw_training_documents = Classifier_df.X_train
+        self.training_class_labels = Classifier_df.y_train
+        self.consolidate_training_set()
         self.N = self.raw_data.shape[0]
         self.class_values = ["business", "sport", "politics", "entertainment", "tech"]
         self.conditional_probabilities = dict()
         self.priors = dict()
         self.class_vocab_count = dict()
+
+    def consolidate_training_set(self):
+        consolidated_df = pd.concat([self.raw_training_documents, self.training_class_labels], axis=1)
+        self.raw_data = consolidated_df
 
     def get_conditional_probability(self):
         pass
@@ -363,13 +363,15 @@ class NaiveBayesClassifier(DocumentProcessing):
 
 
 if __name__ == "__main__":
-    # df = pickle.load(open("raw_data_df.p", "rb"))
-    test = ClassifierDataFrame()
-    inv_index = InvertedIndex()
-    load_data("documents", inv_index, test)
-    test.split_training_testing_set(t_size=0.1)
-    pickle.dump(inv_index, open("Inverted_Index.p", "wb"))
-    pickle.dump(test, open("raw_data_df.p", "wb"))
+    df = pickle.load(open("raw_data_df.p", "rb"))
+    nb = NaiveBayesClassifier(df)
+    nb.consolidate_training_set()
+    # test = ClassifierDataFrame()
+    # inv_index = InvertedIndex()
+    # load_data("documents", inv_index, test)
+    # test.split_training_testing_set(t_size=0.1)
+    # pickle.dump(inv_index, open("Inverted_Index.p", "wb"))
+    # pickle.dump(test, open("raw_data_df.p", "wb"))
     # df = pd.DataFrame([["Vijay Raj Saravanan", "business"],
     #                    ["Vijay Danukka", "business"],
     #                    ["Christiano Ronaldo","sport"],
