@@ -1,31 +1,37 @@
 import numpy as np
 import nltk
-#nltk.download() #!!!Run this the first time you run your script!!!
+# nltk.download() #!!!Run this the first time you run your script!!!
 import os
 from string import punctuation
 from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer
 import operator
 import pandas as pd
+import pickle
 
 """ Stores Document ID and positions of a term """
+
+
 class Document():
     def __init__(self, document_id, position):
         self.id = document_id
         self.positions = []
         self.add_position(position)
 
-    #Adds a position of a term to the Doc object.
+    # Adds a position of a term to the Doc object.
     def add_position(self, position):
         self.positions.append(position)
 
+
 """ Parent class for InvertedIndex and SearchEngine. 
 Deals with preprocessing queries and document text as well as retreiving posting lists."""
+
+
 class DocumentProcessing():
     def __init__(self):
         self.documents = 0
 
-    #Remove stop words and perform stemming
+    # Remove stop words and perform stemming
     def pre_process(self, document_content, remove_stopwords=False, stemming=False):
         preprocessed_tokens = nltk.word_tokenize(document_content)
         if remove_stopwords:
@@ -36,25 +42,27 @@ class DocumentProcessing():
             preprocessed_tokens = [stemmer.stem(word) for word in preprocessed_tokens]
         return preprocessed_tokens
 
-    #Returns the postings list of a term
+    # Returns the postings list of a term
     def get_postings_list(self, term):
         term_index = self.terms.index(term)
         return self.posting_lists[term_index]
 
-"""Storage class for parsing documents and constructing inverted index."""
+
+""" Storage class for parsing documents and constructing inverted index. """
 class InvertedIndex(DocumentProcessing):
     num_documents = 0
+
     def __init__(self):
         self.documents = list()
         self.terms = list()
         self.posting_lists = list()
 
-    #Assign a new document id for new documents
+    # Assign a new document id for new documents
     def assign_document_id(self):
         InvertedIndex.num_documents += 1
         return InvertedIndex.num_documents
 
-    #Parses a new document, preprocesses it and updates the inverted index
+    # Parses a new document, preprocesses it and updates the inverted index
     def parse_document(self, file_name):
         document_id = self.assign_document_id()
         document_text = self.read_text_file(file_name)
@@ -62,33 +70,37 @@ class InvertedIndex(DocumentProcessing):
         processed_tokens = self.pre_process(document_text, remove_stopwords=True, stemming=True)
         self.update_inv_index(processed_tokens, document_id)
 
-    #Adds the document to storage
+    # Adds the document to storage
     def add_document(self, document_content):
         self.documents.append(document_content)
 
-    #Reads a document and returns its content as a string
+    # Reads a document and returns its content as a string
     def read_text_file(self, filename):
         current_dir = os.getcwd()
         doc_path = os.path.join(current_dir, filename)
-        with open(doc_path, "r") as doc:
-            whole_doc = doc.read()
+        try:
+            with open(doc_path, "r") as doc:
+                whole_doc = doc.read()
+        except:
+            print("Error reading file: {}".format(filename))
+            return None
         return whole_doc
 
-    #Add a new term and posting list to inverted index if a new term is found. Update inverted index otherwise.
+    # Add a new term and posting list to inverted index if a new term is found. Update inverted index otherwise.
     def update_inv_index(self, processed_tokens, document_id):
         for token_index in range(0, len(processed_tokens)):
             if (processed_tokens[token_index] not in self.terms):
                 self.terms.append(processed_tokens[token_index])
                 new_postings_list = list()
-                new_doc = Document(document_id, token_index+1)
+                new_doc = Document(document_id, token_index + 1)
                 new_postings_list.append(new_doc)
                 self.posting_lists.append(new_postings_list)
             else:
                 existing_posting_list = self.get_postings_list(processed_tokens[token_index])
-                new_doc = Document(document_id, token_index+1)
+                new_doc = Document(document_id, token_index + 1)
                 existing_posting_list.append(new_doc)
 
-    #Print out inverted index
+    # Print out inverted index
     def __repr__(self):
         output = ""
         for i in range(0, len(self.terms)):
@@ -104,13 +116,15 @@ class InvertedIndex(DocumentProcessing):
 
 
 """Deals with search queries."""
+
+
 class SearchEngine(DocumentProcessing):
     def __init__(self, inverted_index):
         self.terms = inverted_index.terms
         self.documents = inverted_index.documents
         self.posting_lists = inverted_index.posting_lists
 
-    #Provide a string query and returns a posting list with Documents containing all the terms
+    # Provide a string query and returns a posting list with Documents containing all the terms
     def boolean_and_query(self, query):
         tokenized_query = self.pre_process(query, remove_stopwords=True, stemming=True)
         processed_query = self.sort_on_tf(tokenized_query)
@@ -124,7 +138,7 @@ class SearchEngine(DocumentProcessing):
                 posting_list_one = self.get_postings_list(processed_query[0])
                 posting_list_two = self.get_postings_list(processed_query[1])
                 query_results = self.merge_intersect(posting_list_one, posting_list_two)
-            elif (len(processed_query) > 2):
+            elif len(processed_query) > 2:
                 posting_list_one = self.get_postings_list(processed_query.pop(0))
                 posting_list_two = self.get_postings_list(processed_query.pop(0))
                 query_results = self.merge_intersect(posting_list_one, posting_list_two)
@@ -135,7 +149,7 @@ class SearchEngine(DocumentProcessing):
             return None
         return query_results
 
-    #Returns tokens sorted in terms of document frequency
+    # Returns tokens sorted in terms of document frequency
     def sort_on_tf(self, query_tokens):
         tf_info = {}
         sorted_terms = []
@@ -146,7 +160,7 @@ class SearchEngine(DocumentProcessing):
             sorted_terms.append(term_info[0])
         return sorted_terms
 
-    #Returns documents containing query terms in order
+    # Returns documents containing query terms in order
     def positional_search(self, query):
         processed_query = self.pre_process(query)
         query_results = None
@@ -170,7 +184,7 @@ class SearchEngine(DocumentProcessing):
             return None
         return query_results
 
-    #Compare postings lists using merge algorithm
+    # Compare postings lists using merge algorithm
     def merge_intersect(self, post_list_one, post_list_two):
         intersect_documents = []
         pointer_one = 0
@@ -179,28 +193,28 @@ class SearchEngine(DocumentProcessing):
             if (post_list_one[pointer_one].id == post_list_two[pointer_two].id):
                 intersect_documents.append(post_list_two[pointer_two])
                 pointer_one += 1
-                pointer_two +=1
+                pointer_two += 1
             elif (post_list_one[pointer_one].id > post_list_two[pointer_two].id):
                 pointer_two += 1
             else:
                 pointer_one += 1
         return intersect_documents
 
-    #Prints out search results
+    # Prints out search results
     def print_search_results(self, result_docs):
         if len(result_docs) == 0:
             print("No documents found.")
         else:
             for result_doc in result_docs:
-                print(self.documents[result_doc.id-1])
+                print(self.documents[result_doc.id - 1])
 
-    #Checks if a term exists in dictionary
+    # Checks if a term exists in dictionary
     def check_existence(self, term):
         if (term in self.terms):
             return True
         return False
 
-    #Compare postings lists to check if terms appear in order
+    # Compare postings lists to check if terms appear in order
     def positional_intersect(self, post_list_one, post_list_two):
         intersect_documents = []
         pointer_one = 0
@@ -243,23 +257,65 @@ class ClassifierDataFrame():
         except:
             print("Error reading file {} in class {}".format(file_name, class_value))
 
+def load_data(directory, inv_index, classifier_df):
+    current_directory = os.getcwd()
+    doc_directory = os.path.join(current_directory, directory)
+    for class_ in os.listdir(doc_directory):
+        class_docs_loc = os.path.join(doc_directory, class_)
+        if(os.path.isdir(class_docs_loc)):
+            for class_document in os.listdir(class_docs_loc):
+                if not class_document.startswith("."):
+                    doc_location = os.path.join(class_docs_loc, class_document)
+                    classifier_df.add_document(doc_location, class_)
+                    inv_index.parse_document(doc_location)
 
-class NaiveBayesClassifier():
-    def __init__(self, df):
-        self.raw_data = df
 
-    def fit(self, training_data):
-        pass
+# class NaiveBayesClassifier():
+#     def __init__(self, Classifier_df):
+#         self.raw_data = Classifier_df.df
+#         self.class_values = ["business", "sport", "politics", "entertainment", "tech"]
+#         self.business_df = None
+#         self.politics_df = None
+#         self.sport_df = None
+#         self.entertainment_df = None
+#         self.tech_df = None
+#
+#     def get_conditional_probability(self):
+#         pass
+#
+#     def get_prior_probability(self):
+#         pass
+#
+#     def fit(self, training_data):
+#         """
+#         Dictionary contain argmax values
+#         For each class:
+#             Calculate term conditional probabilities
+#             Calculate prior probability
+#             get largest class
+#         """
+#         pass
+#
+#     def calculate_probabities(self, class_value):
+#         terms = list()
+#         num_instances = list()
+#         class_docs = self.raw_data[self.raw_data["class"] == class_value].copy()
+#         documents = class_
+#
+#
+#     def predict(self, testing_data):
+#         pass
 
-    def predict(self, testing_data):
-        pass
 
 if __name__ == "__main__":
     test = ClassifierDataFrame()
-    test.add_document("documents/business/001.txt", "business")
-    test.add_document("documents/business/001.txt", "business")
-    test.add_document("documents/business/001.txt", "business")
-    print(test.df.head())
+    inv_index = InvertedIndex()
+    load_data("documents", inv_index, test)
+    pickle.dump(inv_index, open("Inverted_Index.p", "wb"))
+    pickle.dump(inv_index, open("raw_data_df.p", "wb"))
+    # print(test.df.shape)
+    # test = pickle.load(open("Inverted_Index.p", "rb"))
+    # print(test)
     # inv_index = InvertedIndex()
     # inv_index.parse_document("test1.txt")
     # inv_index.parse_document("test2.txt")
@@ -273,5 +329,3 @@ if __name__ == "__main__":
     # engine.print_search_results(merged_documents)
     # position_docs = engine.positional_search("data big")
     # engine.print_search_results(position_docs)
-
-
