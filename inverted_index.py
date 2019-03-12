@@ -270,49 +270,66 @@ def load_data(directory, inv_index, classifier_df):
                     inv_index.parse_document(doc_location)
 
 
-# class NaiveBayesClassifier():
-#     def __init__(self, Classifier_df):
-#         self.raw_data = Classifier_df.df
-#         self.class_values = ["business", "sport", "politics", "entertainment", "tech"]
-#         self.business_df = None
-#         self.politics_df = None
-#         self.sport_df = None
-#         self.entertainment_df = None
-#         self.tech_df = None
-#
-#     def get_conditional_probability(self):
-#         pass
-#
-#     def get_prior_probability(self):
-#         pass
-#
-#     def fit(self, training_data):
-#         """
-#         Dictionary contain argmax values
-#         For each class:
-#             Calculate term conditional probabilities
-#             Calculate prior probability
-#             get largest class
-#         """
-#         pass
-#
-#     def calculate_probabities(self, class_value):
-#         terms = list()
-#         num_instances = list()
-#         class_docs = self.raw_data[self.raw_data["class"] == class_value].copy()
-#         documents = class_
-#
-#
-#     def predict(self, testing_data):
-#         pass
+class NaiveBayesClassifier(DocumentProcessing):
+    def __init__(self, Classifier_df):
+        self.raw_data = Classifier_df.df
+        self.N = self.raw_data.shape[0]
+        self.class_values = ["business", "sport", "politics", "entertainment", "tech"]
+        self.business_df = None
+        self.politics_df = None
+        self.sport_df = None
+        self.entertainment_df = None
+        self.tech_df = None
+        self.priors = dict()
+
+    def get_conditional_probability(self):
+        pass
+
+    def get_prior_probability(self):
+        pass
+
+    def fit(self, training_data):
+        """
+        Dictionary contain argmax values
+        For each class:
+            Calculate term conditional probabilities
+            Calculate prior probability
+            get largest class
+        """
+        pass
+
+    def calculate_probabities(self, class_value):
+        terms = list()
+        num_instances = list()
+        class_docs = list(self.raw_data[self.raw_data["class"] == class_value].copy()["document_contents"])
+        N_c = len(class_docs)
+        prior = N_c / self.N
+        self.priors[class_value] = prior
+        for class_doc in class_docs:
+            tokens = self.pre_process(class_doc, remove_stopwords=True, stemming=True)
+            for token in tokens:
+                if token not in terms:
+                    terms.append(terms)
+                    num_instances.append(0)
+        for class_doc_ in class_docs:
+            tokens_ = self.pre_process(class_doc_, remove_stopwords=True, stemming=True)
+            for token_ in tokens_:
+                term_index = terms.index(token_)
+                num_instances[term_index] += 1
+        return terms, num_instances
+
+
+
+    def predict(self, testing_data):
+        pass
 
 
 if __name__ == "__main__":
-    test = ClassifierDataFrame()
-    inv_index = InvertedIndex()
-    load_data("documents", inv_index, test)
-    pickle.dump(inv_index, open("Inverted_Index.p", "wb"))
-    pickle.dump(inv_index, open("raw_data_df.p", "wb"))
+    # test = ClassifierDataFrame()
+    # inv_index = InvertedIndex()
+    # load_data("documents", inv_index, test)
+    # pickle.dump(inv_index, open("Inverted_Index.p", "wb"))
+    # pickle.dump(inv_index, open("raw_data_df.p", "wb"))
     # print(test.df.shape)
     # test = pickle.load(open("Inverted_Index.p", "rb"))
     # print(test)
