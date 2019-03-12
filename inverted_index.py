@@ -8,6 +8,8 @@ from nltk.stem import PorterStemmer
 import operator
 import pandas as pd
 import pickle
+from sklearn.model_selection import train_test_split
+from sklearn.model_selection import StratifiedShuffleSplit
 
 """ Stores Document ID and positions of a term """
 
@@ -248,6 +250,12 @@ class ClassifierDataFrame():
     def __init__(self):
         self.columns = ["document_contents", "class"]
         self.df = pd.DataFrame(columns=self.columns)
+        self.features = None
+        self.target = None
+        self.X_train = None
+        self.y_train = None
+        self.X_test = None
+        self.y_test = None
 
     def add_document(self, file_name, class_value):
         try:
@@ -256,6 +264,27 @@ class ClassifierDataFrame():
                 self.df = pd.concat([self.df, data_instance]).reset_index(drop=True)
         except:
             print("Error reading file {} in class {}".format(file_name, class_value))
+
+    def split_target_features(self):
+        self.features = self.df["document_contents"].copy()
+        self.target = self.df["class"].copy()
+
+    def split_training_testing_set(self, t_size):
+        self.split_target_features()
+        stratified_split = StratifiedShuffleSplit(n_splits=1, test_size=t_size, random_state=7)
+        for train_index, test_index in stratified_split.split(self.features, self.target):
+            self.X_train = pd.DataFrame(np.reshape(self.features.loc[train_index].values, (-1,1)), columns=["document_contents"])
+            self.y_train = pd.DataFrame(np.reshape(self.target.loc[train_index].values, (-1,1)), columns=["document_contents"])
+            self.X_test = pd.DataFrame(np.reshape(self.features.loc[test_index].values, (-1,1)), columns=["document_contents"])
+            self.y_test = pd.DataFrame(np.reshape(self.target.loc[test_index].values, (-1,1)), columns=["document_contents"])
+        print(self.X_train.head(1))
+        print(self.y_train.head(1))
+        print(self.X_test.head(1))
+        print(self.y_test.head(1))
+
+
+        # self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(self.features, self.target, test_size=t_size)
+
 
 def load_data(directory, inv_index, classifier_df):
     current_directory = os.getcwd()
@@ -334,7 +363,13 @@ class NaiveBayesClassifier(DocumentProcessing):
 
 
 if __name__ == "__main__":
-    df = pickle.load(open("raw_data_df.p", "rb"))
+    # df = pickle.load(open("raw_data_df.p", "rb"))
+    test = ClassifierDataFrame()
+    inv_index = InvertedIndex()
+    load_data("documents", inv_index, test)
+    test.split_training_testing_set(t_size=0.1)
+    pickle.dump(inv_index, open("Inverted_Index.p", "wb"))
+    pickle.dump(test, open("raw_data_df.p", "wb"))
     # df = pd.DataFrame([["Vijay Raj Saravanan", "business"],
     #                    ["Vijay Danukka", "business"],
     #                    ["Christiano Ronaldo","sport"],
@@ -345,13 +380,14 @@ if __name__ == "__main__":
     #                    ["Raj Mobile","tech"],
     #                    ["Trump sucks", "politics"],
     #                    ["Obama rocks", "politics"]], columns=["document_contents", "class"])
-    nb = NaiveBayesClassifier(df)
-    nb.fit()
-    maxima = nb.predict("FBI agent colludes")
+    # nb = NaiveBayesClassifier(df)
+
+    # nb.fit()
+    # maxima = nb.predict("FBI agent colludes")
     # for j in nb.priors.items():
     #     print(j)
-    for i, j in maxima.items():
-        print("{}: {}".format(i,j))
+    # for i, j in maxima.items():
+    #     print("{}: {}".format(i,j))
 
 
 
