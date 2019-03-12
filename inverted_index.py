@@ -272,15 +272,12 @@ def load_data(directory, inv_index, classifier_df):
 
 class NaiveBayesClassifier(DocumentProcessing):
     def __init__(self, Classifier_df):
-        self.raw_data = Classifier_df.df
+        self.raw_data = Classifier_df#.df
         self.N = self.raw_data.shape[0]
         self.class_values = ["business", "sport", "politics", "entertainment", "tech"]
-        self.business_df = None
-        self.politics_df = None
-        self.sport_df = None
-        self.entertainment_df = None
-        self.tech_df = None
+        self.conditional_probabilities = dict()
         self.priors = dict()
+        self.class_vocab_count = dict()
 
     def get_conditional_probability(self):
         pass
@@ -288,52 +285,84 @@ class NaiveBayesClassifier(DocumentProcessing):
     def get_prior_probability(self):
         pass
 
-    def fit(self, training_data):
-        """
-        Dictionary contain argmax values
-        For each class:
-            Calculate term conditional probabilities
-            Calculate prior probability
-            get largest class
-        """
-        pass
+    def fit(self):
+        for class_value in self.class_values:
+            self.calculate_probabities(class_value)
 
     def calculate_probabities(self, class_value):
         terms = list()
+        voc_count = 0
         num_instances = list()
         class_docs = list(self.raw_data[self.raw_data["class"] == class_value].copy()["document_contents"])
         N_c = len(class_docs)
-        prior = N_c / self.N
+        print(N_c)
+        prior = np.log(N_c / self.N)
         self.priors[class_value] = prior
         for class_doc in class_docs:
             tokens = self.pre_process(class_doc, remove_stopwords=True, stemming=True)
             for token in tokens:
+                voc_count += 1
                 if token not in terms:
-                    terms.append(terms)
+                    terms.append(token)
                     num_instances.append(0)
         for class_doc_ in class_docs:
             tokens_ = self.pre_process(class_doc_, remove_stopwords=True, stemming=True)
             for token_ in tokens_:
                 term_index = terms.index(token_)
                 num_instances[term_index] += 1
-        return terms, num_instances
+        self.class_vocab_count[class_value] = voc_count
+        conditional_probs = np.array([terms, num_instances])
+        conditional_probs = conditional_probs.T
+        conditional_df = pd.DataFrame(conditional_probs, columns=["terms", "number_of_instances"])
+        conditional_df["number_of_instances"] = conditional_df.number_of_instances.astype(int)
+        conditional_df["conditional_probability"] = (conditional_df["number_of_instances"] + 1)/(voc_count + 1)
+        self.conditional_probabilities[class_value] = conditional_df
 
-
-
-    def predict(self, testing_data):
-        pass
+    def predict(self, test):
+        tokens = self.pre_process(test, remove_stopwords=True, stemming=True)
+        maxima = dict()
+        for class_value in self.class_values:
+            class_df = self.conditional_probabilities[class_value]
+            output = self.priors[class_value]
+            for word in tokens:
+                if word in class_df.terms.unique():
+                    instance = class_df[class_df.terms == word].loc[:,"conditional_probability"]
+                    output += np.log(instance)
+                else:
+                    output += np.log(1/(self.class_vocab_count[class_value] + 1))
+            maxima[class_value] = output
+        return maxima
 
 
 if __name__ == "__main__":
     # df = pickle.load(open("raw_data_df.p", "rb"))
-    # nb = NaiveBayesClassifier(df)
+    df = pd.DataFrame([["Vijay Raj Saravanan", "business"],
+                       ["Vijay Danukka", "business"],
+                       ["Christiano Ronaldo","sport"],
+                       ["Beckham", "sport"],
+                       ["Television", "entertainment"],
+                       ["Radio","entertainment"],
+                       ["Raj Computer","tech"],
+                       ["Raj Mobile","tech"],
+                       ["Trump sucks", "politics"],
+                       ["Obama rocks", "politics"]], columns=["document_contents", "class"])
+    nb = NaiveBayesClassifier(df)
+    nb.fit()
+    maxima = nb.predict("Raj Gunda")
+    # for j in nb.priors.items():
+    #     print(j)
+    for i in maxima.items():
+        print(i)
 
 
-    test = ClassifierDataFrame()
-    inv_index = InvertedIndex()
-    load_data("documents", inv_index, test)
-    pickle.dump(inv_index, open("Inverted_Index.p", "wb"))
-    pickle.dump(test, open("raw_data_df.p", "wb"))
+
+
+
+    # test = ClassifierDataFrame()
+    # inv_index = InvertedIndex()
+    # load_data("documents", inv_index, test)
+    # pickle.dump(inv_index, open("Inverted_Index.p", "wb"))
+    # pickle.dump(test, open("raw_data_df.p", "wb"))
     # print(test.df.shape)
     # test = pickle.load(open("Inverted_Index.p", "rb"))
     # print(test)
