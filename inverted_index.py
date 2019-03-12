@@ -302,11 +302,11 @@ class NaiveBayesClassifier(DocumentProcessing):
         self.class_values = ["business", "sport", "politics", "entertainment", "tech"]
         self.conditional_probabilities = dict()
         self.priors = dict()
+        self.total_vocab_count = 0
         self.class_vocab_count = dict()
 
     def consolidate_training_set(self):
         consolidated_df = pd.concat([self.raw_training_documents, self.training_class_labels], axis=1)
-        print(self.training_class_labels.columns)
         self.raw_data = consolidated_df
 
     def get_conditional_probability(self):
@@ -318,6 +318,15 @@ class NaiveBayesClassifier(DocumentProcessing):
     def fit(self):
         for class_value in self.class_values:
             self.calculate_probabities(class_value)
+
+    # def parse_vocabulary(self):
+    #     for class_value_ in self.class_values:
+    #         class_docs = list(self.raw_data[self.raw_data["class"] == class_value_].copy()["document_contents"])
+    #         for class_doc in class_docs:
+    #             tokens = self.pre_process(class_doc, remove_stopwords=True, stemming=True)
+    #             for token in tokens:
+    #                 voc_count += 1
+
 
     def calculate_probabities(self, class_value):
         terms = list()
@@ -356,21 +365,26 @@ class NaiveBayesClassifier(DocumentProcessing):
             for word in tokens:
                 if word in class_df.terms.unique():
                     instance = class_df[class_df.terms == word].loc[:,"conditional_probability"]
+                    print(instance)
                     output += np.log(instance)
-                else:
-                    output += np.log(1/(self.class_vocab_count[class_value] + 1))
-            maxima[class_value] = output
-        return maxima
+                    print(output)
+        #         else:
+        #             output += np.log(1/(self.class_vocab_count[class_value] + 1))
+        #     maxima[class_value] = output
+        # return maxima
 
 
 if __name__ == "__main__":
-    # df = pickle.load(open("raw_data_df.p", "rb"))
+    df = pickle.load(open("raw_data_df.p", "rb"))
+    nb
     # nb = NaiveBayesClassifier(df)
-    # print(df.X_train.columns)
-    # print(df.y_train.columns)
     # nb.consolidate_training_set()
     # nb.fit()
-    # nb.predict(df.X_test.loc[0])
+    # pickle.dump(nb, open("Naive_Bayes.p", "wb"))
+    # maxima = nb.predict_single(str(df.X_test.loc[0,"document_contents"]))
+    #
+    # # print(str(df.X_test.loc[0,"document_contents"]))
+    # print(df.y_test.loc[0, "class"])
 
 
     # test = ClassifierDataFrame()
