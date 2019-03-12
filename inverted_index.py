@@ -297,13 +297,14 @@ class NaiveBayesClassifier(DocumentProcessing):
         self.raw_data = None
         self.raw_training_documents = Classifier_df.X_train
         self.training_class_labels = Classifier_df.y_train
-        self.consolidate_training_set()
-        self.N = self.raw_data.shape[0]
-        self.class_values = ["business", "sport", "politics", "entertainment", "tech"]
-        self.conditional_probabilities = dict()
         self.priors = dict()
+        self.conditional_probabilities = dict()
         self.total_vocab_count = 0
         self.class_vocab_count = dict()
+        self.consolidate_training_set()
+        self.parse_vocabulary()
+        self.N = self.raw_data.shape[0]
+        self.class_values = ["business", "sport", "politics", "entertainment", "tech"]
 
     def consolidate_training_set(self):
         consolidated_df = pd.concat([self.raw_training_documents, self.training_class_labels], axis=1)
@@ -319,14 +320,13 @@ class NaiveBayesClassifier(DocumentProcessing):
         for class_value in self.class_values:
             self.calculate_probabities(class_value)
 
-    # def parse_vocabulary(self):
-    #     for class_value_ in self.class_values:
-    #         class_docs = list(self.raw_data[self.raw_data["class"] == class_value_].copy()["document_contents"])
-    #         for class_doc in class_docs:
-    #             tokens = self.pre_process(class_doc, remove_stopwords=True, stemming=True)
-    #             for token in tokens:
-    #                 voc_count += 1
-
+    def parse_vocabulary(self):
+        for class_value_ in self.class_values:
+            class_docs = list(self.raw_data[self.raw_data["class"] == class_value_].copy()["document_contents"])
+            for class_doc in class_docs:
+                tokens = self.pre_process(class_doc, remove_stopwords=True, stemming=True)
+                for token in tokens:
+                    voc_count += 1
 
     def calculate_probabities(self, class_value):
         terms = list()
@@ -353,7 +353,7 @@ class NaiveBayesClassifier(DocumentProcessing):
         conditional_probs = conditional_probs.T
         conditional_df = pd.DataFrame(conditional_probs, columns=["terms", "number_of_instances"])
         conditional_df["number_of_instances"] = conditional_df.number_of_instances.astype(int)
-        conditional_df["conditional_probability"] = (conditional_df["number_of_instances"] + 1)/(voc_count + 1)
+        conditional_df["conditional_probability"] = (conditional_df["number_of_instances"] + 1)/(voc_count + self.total_vocab_count)
         self.conditional_probabilities[class_value] = conditional_df
 
     def predict_single(self, test):
