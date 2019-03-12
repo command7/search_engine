@@ -273,10 +273,10 @@ class ClassifierDataFrame():
         self.split_target_features()
         stratified_split = StratifiedShuffleSplit(n_splits=1, test_size=t_size, random_state=7)
         for train_index, test_index in stratified_split.split(self.features, self.target):
-            self.X_train = pd.DataFrame(np.reshape(self.features.loc[train_index].values, (-1,1)), columns=["document_contents"])
-            self.y_train = pd.DataFrame(np.reshape(self.target.loc[train_index].values, (-1,1)), columns=["document_contents"])
-            self.X_test = pd.DataFrame(np.reshape(self.features.loc[test_index].values, (-1,1)), columns=["document_contents"])
-            self.y_test = pd.DataFrame(np.reshape(self.target.loc[test_index].values, (-1,1)), columns=["document_contents"])
+            self.X_train = pd.DataFrame(np.reshape(self.features.loc[train_index].values, (-1,1)), columns=["document_contents"]).reset_index(drop=True)
+            self.y_train = pd.DataFrame(np.reshape(self.target.loc[train_index].values, (-1,1)), columns=["class"]).reset_index(drop=True)
+            self.X_test = pd.DataFrame(np.reshape(self.features.loc[test_index].values, (-1,1)), columns=["document_contents"]).reset_index(drop=True)
+            self.y_test = pd.DataFrame(np.reshape(self.target.loc[test_index].values, (-1,1)), columns=["class"]).reset_index(drop=True)
 
 
 def load_data(directory, inv_index, classifier_df):
@@ -306,6 +306,7 @@ class NaiveBayesClassifier(DocumentProcessing):
 
     def consolidate_training_set(self):
         consolidated_df = pd.concat([self.raw_training_documents, self.training_class_labels], axis=1)
+        print(self.training_class_labels.columns)
         self.raw_data = consolidated_df
 
     def get_conditional_probability(self):
@@ -346,7 +347,7 @@ class NaiveBayesClassifier(DocumentProcessing):
         conditional_df["conditional_probability"] = (conditional_df["number_of_instances"] + 1)/(voc_count + 1)
         self.conditional_probabilities[class_value] = conditional_df
 
-    def predict(self, test):
+    def predict_single(self, test):
         tokens = self.pre_process(test, remove_stopwords=True, stemming=True)
         maxima = dict()
         for class_value in self.class_values:
@@ -363,15 +364,24 @@ class NaiveBayesClassifier(DocumentProcessing):
 
 
 if __name__ == "__main__":
-    df = pickle.load(open("raw_data_df.p", "rb"))
-    nb = NaiveBayesClassifier(df)
-    nb.consolidate_training_set()
+    # df = pickle.load(open("raw_data_df.p", "rb"))
+    # nb = NaiveBayesClassifier(df)
+    # print(df.X_train.columns)
+    # print(df.y_train.columns)
+    # nb.consolidate_training_set()
+    # nb.fit()
+    # nb.predict(df.X_test.loc[0])
+
+
     # test = ClassifierDataFrame()
     # inv_index = InvertedIndex()
     # load_data("documents", inv_index, test)
     # test.split_training_testing_set(t_size=0.1)
     # pickle.dump(inv_index, open("Inverted_Index.p", "wb"))
     # pickle.dump(test, open("raw_data_df.p", "wb"))
+
+
+
     # df = pd.DataFrame([["Vijay Raj Saravanan", "business"],
     #                    ["Vijay Danukka", "business"],
     #                    ["Christiano Ronaldo","sport"],
