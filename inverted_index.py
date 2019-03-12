@@ -230,37 +230,48 @@ class SearchEngine(DocumentProcessing):
         return intersect_documents
 
 
-    class ClassifierDataFrame():
-        def __init__(self):
-            pass
+class ClassifierDataFrame():
+    def __init__(self):
+        self.columns = ["document_contents", "class"]
+        self.df = pd.DataFrame(columns=self.columns)
 
-        def add_document(self, file_name):
-            pass:
+    def add_document(self, file_name, class_value):
+        try:
+            with open(file_name) as document:
+                data_instance = pd.DataFrame([[document.read(), class_value]], columns=self.columns)
+                self.df = pd.concat([self.df, data_instance]).reset_index(drop=True)
+        except:
+            print("Error reading file {} in class {}".format(file_name, class_value))
 
 
-    class NaiveBayesClassifier():
-        def __init__(self):
-            pass
+class NaiveBayesClassifier():
+    def __init__(self, df):
+        self.raw_data = df
 
-        def fit(self, training_data):
-            pass
+    def fit(self, training_data):
+        pass
 
-        def predict(self, testing_data):
-            pass
+    def predict(self, testing_data):
+        pass
 
 if __name__ == "__main__":
-    inv_index = InvertedIndex()
-    inv_index.parse_document("test1.txt")
-    inv_index.parse_document("test2.txt")
-    inv_index.parse_document("test3.txt")
-    inv_index.parse_document("test4.txt")
-    for i in inv_index.documents:
-        print(i)
-    print(inv_index)
-    engine = SearchEngine(inv_index)
-    merged_documents = engine.boolean_and_query("text warehousing")
-    engine.print_search_results(merged_documents)
-    position_docs = engine.positional_search("data big")
-    engine.print_search_results(position_docs)
+    test = ClassifierDataFrame()
+    test.add_document("documents/business/001.txt", "business")
+    test.add_document("documents/business/001.txt", "business")
+    test.add_document("documents/business/001.txt", "business")
+    print(test.df.head())
+    # inv_index = InvertedIndex()
+    # inv_index.parse_document("test1.txt")
+    # inv_index.parse_document("test2.txt")
+    # inv_index.parse_document("test3.txt")
+    # inv_index.parse_document("test4.txt")
+    # for i in inv_index.documents:
+    #     print(i)
+    # print(inv_index)
+    # engine = SearchEngine(inv_index)
+    # merged_documents = engine.boolean_and_query("text warehousing")
+    # engine.print_search_results(merged_documents)
+    # position_docs = engine.positional_search("data big")
+    # engine.print_search_results(position_docs)
 
 
