@@ -364,27 +364,24 @@ class NaiveBayesClassifier(DocumentProcessing):
             output = self.priors[class_value]
             for word in tokens:
                 if word in class_df.terms.unique():
-                    instance = class_df[class_df.terms == word].loc[:,"conditional_probability"]
-                    print(instance)
+                    instance = float(class_df[class_df.terms == word].loc[:,"conditional_probability"])
                     output += np.log(instance)
-                    print(output)
-        #         else:
-        #             output += np.log(1/(self.class_vocab_count[class_value] + 1))
-        #     maxima[class_value] = output
-        # return maxima
+                else:
+                    output += np.log(1/(self.class_vocab_count[class_value] + 1))
+            maxima[class_value] = output
+        return max(maxima, key=maxima.get)
 
 
 if __name__ == "__main__":
     df = pickle.load(open("raw_data_df.p", "rb"))
-    nb
+    nb = pickle.load(open("Naive_Bayes.p", "rb"))
     # nb = NaiveBayesClassifier(df)
     # nb.consolidate_training_set()
     # nb.fit()
     # pickle.dump(nb, open("Naive_Bayes.p", "wb"))
-    # maxima = nb.predict_single(str(df.X_test.loc[0,"document_contents"]))
-    #
-    # # print(str(df.X_test.loc[0,"document_contents"]))
-    # print(df.y_test.loc[0, "class"])
+    maxima = nb.predict_single(str(df.X_test.loc[0,"document_contents"]))
+    print(maxima)
+
 
 
     # test = ClassifierDataFrame()
@@ -396,7 +393,7 @@ if __name__ == "__main__":
 
 
 
-    # df = pd.DataFrame([["Vijay Raj Saravanan", "business"],
+
     #                    ["Vijay Danukka", "business"],
     #                    ["Christiano Ronaldo","sport"],
     #                    ["Beckham", "sport"],
@@ -406,14 +403,6 @@ if __name__ == "__main__":
     #                    ["Raj Mobile","tech"],
     #                    ["Trump sucks", "politics"],
     #                    ["Obama rocks", "politics"]], columns=["document_contents", "class"])
-    # nb = NaiveBayesClassifier(df)
-
-    # nb.fit()
-    # maxima = nb.predict("FBI agent colludes")
-    # for j in nb.priors.items():
-    #     print(j)
-    # for i, j in maxima.items():
-    #     print("{}: {}".format(i,j))
 
 
 
