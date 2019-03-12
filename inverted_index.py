@@ -272,7 +272,7 @@ def load_data(directory, inv_index, classifier_df):
 
 class NaiveBayesClassifier(DocumentProcessing):
     def __init__(self, Classifier_df):
-        self.raw_data = Classifier_df#.df
+        self.raw_data = Classifier_df.df
         self.N = self.raw_data.shape[0]
         self.class_values = ["business", "sport", "politics", "entertainment", "tech"]
         self.conditional_probabilities = dict()
@@ -295,7 +295,6 @@ class NaiveBayesClassifier(DocumentProcessing):
         num_instances = list()
         class_docs = list(self.raw_data[self.raw_data["class"] == class_value].copy()["document_contents"])
         N_c = len(class_docs)
-        print(N_c)
         prior = np.log(N_c / self.N)
         self.priors[class_value] = prior
         for class_doc in class_docs:
@@ -335,24 +334,24 @@ class NaiveBayesClassifier(DocumentProcessing):
 
 
 if __name__ == "__main__":
-    # df = pickle.load(open("raw_data_df.p", "rb"))
-    df = pd.DataFrame([["Vijay Raj Saravanan", "business"],
-                       ["Vijay Danukka", "business"],
-                       ["Christiano Ronaldo","sport"],
-                       ["Beckham", "sport"],
-                       ["Television", "entertainment"],
-                       ["Radio","entertainment"],
-                       ["Raj Computer","tech"],
-                       ["Raj Mobile","tech"],
-                       ["Trump sucks", "politics"],
-                       ["Obama rocks", "politics"]], columns=["document_contents", "class"])
+    df = pickle.load(open("raw_data_df.p", "rb"))
+    # df = pd.DataFrame([["Vijay Raj Saravanan", "business"],
+    #                    ["Vijay Danukka", "business"],
+    #                    ["Christiano Ronaldo","sport"],
+    #                    ["Beckham", "sport"],
+    #                    ["Television", "entertainment"],
+    #                    ["Radio","entertainment"],
+    #                    ["Raj Computer","tech"],
+    #                    ["Raj Mobile","tech"],
+    #                    ["Trump sucks", "politics"],
+    #                    ["Obama rocks", "politics"]], columns=["document_contents", "class"])
     nb = NaiveBayesClassifier(df)
     nb.fit()
-    maxima = nb.predict("Raj Gunda")
+    maxima = nb.predict("FBI agent colludes")
     # for j in nb.priors.items():
     #     print(j)
-    for i in maxima.items():
-        print(i)
+    for i, j in maxima.items():
+        print("{}: {}".format(i,j))
 
 
 
