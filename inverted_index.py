@@ -325,11 +325,15 @@ class NaiveBayesClassifier(DocumentProcessing):
 
 
 if __name__ == "__main__":
-    # test = ClassifierDataFrame()
-    # inv_index = InvertedIndex()
-    # load_data("documents", inv_index, test)
-    # pickle.dump(inv_index, open("Inverted_Index.p", "wb"))
-    # pickle.dump(inv_index, open("raw_data_df.p", "wb"))
+    # df = pickle.load(open("raw_data_df.p", "rb"))
+    # nb = NaiveBayesClassifier(df)
+
+
+    test = ClassifierDataFrame()
+    inv_index = InvertedIndex()
+    load_data("documents", inv_index, test)
+    pickle.dump(inv_index, open("Inverted_Index.p", "wb"))
+    pickle.dump(test, open("raw_data_df.p", "wb"))
     # print(test.df.shape)
     # test = pickle.load(open("Inverted_Index.p", "rb"))
     # print(test)
