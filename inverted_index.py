@@ -8,7 +8,7 @@ from nltk.stem import PorterStemmer
 import operator
 import pandas as pd
 import pickle
-from sklearn.model_selection import train_test_split
+from sklearn.metrics import f1_score, precision_score, recall_score, confusion_matrix
 from sklearn.model_selection import StratifiedShuffleSplit
 
 """ Stores Document ID and positions of a term """
@@ -301,10 +301,11 @@ class NaiveBayesClassifier(DocumentProcessing):
         self.conditional_probabilities = dict()
         self.total_vocab_count = 0
         self.class_vocab_count = dict()
+        self.class_values = ["business", "sport", "politics", "entertainment", "tech"]
+        self.metrics = dict()
         self.consolidate_training_set()
         self.parse_vocabulary()
         self.N = self.raw_data.shape[0]
-        self.class_values = ["business", "sport", "politics", "entertainment", "tech"]
 
     def consolidate_training_set(self):
         consolidated_df = pd.concat([self.raw_training_documents, self.training_class_labels], axis=1)
@@ -318,7 +319,7 @@ class NaiveBayesClassifier(DocumentProcessing):
 
     def fit(self):
         for class_value in self.class_values:
-            self.calculate_probabities(class_value)
+            self.calculate_probabilities(class_value)
 
     def parse_vocabulary(self):
         for class_value_ in self.class_values:
@@ -326,9 +327,9 @@ class NaiveBayesClassifier(DocumentProcessing):
             for class_doc in class_docs:
                 tokens = self.pre_process(class_doc, remove_stopwords=True, stemming=True)
                 for token in tokens:
-                    voc_count += 1
+                    self.total_vocab_count += 1
 
-    def calculate_probabities(self, class_value):
+    def calculate_probabilities(self, class_value):
         terms = list()
         voc_count = 0
         num_instances = list()
@@ -356,6 +357,19 @@ class NaiveBayesClassifier(DocumentProcessing):
         conditional_df["conditional_probability"] = (conditional_df["number_of_instances"] + 1)/(voc_count + self.total_vocab_count)
         self.conditional_probabilities[class_value] = conditional_df
 
+    def calculate_metrics(self, predictions, testing_labels):
+        precision = precision_score(testing_labels, predictions, average="weighted")
+        recall = recall_score(testing_labels, predictions, average="weighted")
+        f_score = f1_score(testing_labels, predictions, average="weighted")
+        confusion_mat = confusion_matrix(testing_labels, predictions)
+        return precision, recall, f_score, confusion_mat
+        # Calculate Precision
+        # Calculate Recall
+        # Calculate F score
+        # Create Confusion Matrix
+
+
+
     def predict_single(self, test):
         tokens = self.pre_process(test, remove_stopwords=True, stemming=True)
         maxima = dict()
@@ -371,61 +385,35 @@ class NaiveBayesClassifier(DocumentProcessing):
             maxima[class_value] = output
         return max(maxima, key=maxima.get)
 
+    def predict_multiple(self, testing_df):
+        predictions = []
+        for document_content in testing_df["document_contents"].values:
+            tokens = self.pre_process(str(document_content))
+            maxima = dict()
+            for class_value in self.class_values:
+                class_df = self.conditional_probabilities[class_value]
+                output = self.priors[class_value]
+                for word in tokens:
+                    if word in class_df.terms.unique():
+                        instance = float(class_df[class_df.terms == word].loc[:, "conditional_probability"])
+                        output += np.log(instance)
+                    else:
+                        output += np.log(1 / (self.class_vocab_count[class_value] + 1))
+                maxima[class_value] = output
+            predictions.append(max(maxima, key=maxima.get))
+        predictions_df = pd.DataFrame(predictions, columns=["class_predictions"])
+        predictions_df.to_csv("test_predictions.csv")
+        return predictions_df
+        # predictions_df.to_csv("test_predictions.csv")
+
 
 if __name__ == "__main__":
     df = pickle.load(open("raw_data_df.p", "rb"))
     nb = pickle.load(open("Naive_Bayes.p", "rb"))
-    # nb = NaiveBayesClassifier(df)
-    # nb.consolidate_training_set()
-    # nb.fit()
-    # pickle.dump(nb, open("Naive_Bayes.p", "wb"))
-    maxima = nb.predict_single(str(df.X_test.loc[0,"document_contents"]))
-    print(maxima)
-
-
-
-    # test = ClassifierDataFrame()
-    # inv_index = InvertedIndex()
-    # load_data("documents", inv_index, test)
-    # test.split_training_testing_set(t_size=0.1)
-    # pickle.dump(inv_index, open("Inverted_Index.p", "wb"))
-    # pickle.dump(test, open("raw_data_df.p", "wb"))
-
-
-
-
-    #                    ["Vijay Danukka", "business"],
-    #                    ["Christiano Ronaldo","sport"],
-    #                    ["Beckham", "sport"],
-    #                    ["Television", "entertainment"],
-    #                    ["Radio","entertainment"],
-    #                    ["Raj Computer","tech"],
-    #                    ["Raj Mobile","tech"],
-    #                    ["Trump sucks", "politics"],
-    #                    ["Obama rocks", "politics"]], columns=["document_contents", "class"])
-
-
-
-
-
-    # test = ClassifierDataFrame()
-    # inv_index = InvertedIndex()
-    # load_data("documents", inv_index, test)
-    # pickle.dump(inv_index, open("Inverted_Index.p", "wb"))
-    # pickle.dump(test, open("raw_data_df.p", "wb"))
-    # print(test.df.shape)
-    # test = pickle.load(open("Inverted_Index.p", "rb"))
-    # print(test)
-    # inv_index = InvertedIndex()
-    # inv_index.parse_document("test1.txt")
-    # inv_index.parse_document("test2.txt")
-    # inv_index.parse_document("test3.txt")
-    # inv_index.parse_document("test4.txt")
-    # for i in inv_index.documents:
-    #     print(i)
-    # print(inv_index)
-    # engine = SearchEngine(inv_index)
-    # merged_documents = engine.boolean_and_query("text warehousing")
-    # engine.print_search_results(merged_documents)
-    # position_docs = engine.positional_search("data big")
-    # engine.print_search_results(position_docs)
+    predictions = pd.read_csv("test_predictions.csv")
+    encoded_test = df.y_test["class"].map({"politics":0, "entertainment":1,"sport":2,"business":3, "tech" :4}).values
+    encoded_pred = predictions["class_predictions"].map({"politics":0, "entertainment":1,"sport":2,"business":3, "tech" :4}).values
+    precision, recall, fscore, conf_mat = nb.calculate_metrics(encoded_pred, encoded_test)
+    print("Precision : {}".format(precision))
+    print("Recall : {}".format(recall))
+    print("F1 Score : {}".format(fscore))
