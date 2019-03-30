@@ -294,9 +294,8 @@ def load_data(directory, inv_index, classifier_df):
 
 
 class NaiveBayesClassifier(DocumentProcessing):
-    def __init__(self, Classifier_df, mode="multinomial"):
+    def __init__(self, Classifier_df):
         self.raw_data = None
-        self.mode = mode
         self.raw_training_documents = Classifier_df.X_train
         self.training_class_labels = Classifier_df.y_train
         self.priors = dict()
@@ -316,9 +315,6 @@ class NaiveBayesClassifier(DocumentProcessing):
     def get_conditional_probability(self, word, class_value):
         class_df = self.conditional_probabilities[class_value]
         return float(class_df[class_df.terms == word].loc[:, "conditional_probability"])
-
-    def get_prior_probability(self):
-        pass
 
     def fit(self):
         for class_value in self.class_values:
@@ -371,10 +367,10 @@ class NaiveBayesClassifier(DocumentProcessing):
         # Calculate F score
         # Create Confusion Matrix
 
-    def predict_single(self, pred_doc):
+    def predict_single(self, pred_doc, mode):
         tokens = self.pre_process(pred_doc, remove_stopwords=True, stemming=True)
         argmax = dict()
-        if self.mode == "bernoulli":
+        if mode == "bernoulli":
             for class_value in self.class_values:
                 class_df = self.conditional_probabilities[class_value]
                 output = self.priors[class_value]
@@ -387,7 +383,7 @@ class NaiveBayesClassifier(DocumentProcessing):
                 argmax[class_value] = output
             return max(argmax, key=argmax.get)
 
-        elif self.mode == "multinomial":
+        elif mode == "multinomial":
             for class_value in self.class_values:
                 class_df = self.conditional_probabilities[class_value]
                 output = self.priors[class_value]
@@ -399,9 +395,9 @@ class NaiveBayesClassifier(DocumentProcessing):
                         output += np.log(1/(self.class_vocab_count[class_value] + 1))
             return max(argmax, key=argmax.get)
 
-    def predict_multiple(self, testing_df):
+    def predict_multiple(self, testing_df, mode):
         predictions = []
-        if self.model == "bernoulli":
+        if mode == "bernoulli":
             for document_content in testing_df["document_contents"].values:
                 tokens = self.pre_process(str(document_content))
                 maxima = dict()
@@ -419,7 +415,7 @@ class NaiveBayesClassifier(DocumentProcessing):
             predictions_df = pd.DataFrame(predictions, columns=["class_predictions"])
             predictions_df.to_csv("test_predictions.csv")
             return predictions_df
-        elif self.model == "multinomial":
+        elif mode == "multinomial":
             for document_content in testing_df["document_contents"].values:
                 tokens = self.pre_process(str(document_content))
                 maxima = dict()
