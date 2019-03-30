@@ -54,7 +54,6 @@ class DocumentProcessing():
 """ Storage class for parsing documents and constructing inverted index. """
 class InvertedIndex(DocumentProcessing):
     num_documents = 0
-
     def __init__(self):
         self.documents = list()
         self.terms = list()
@@ -100,8 +99,14 @@ class InvertedIndex(DocumentProcessing):
                 self.posting_lists.append(new_postings_list)
             else:
                 existing_posting_list = self.get_postings_list(processed_tokens[token_index])
-                new_doc = Document(document_id, token_index + 1)
-                existing_posting_list.append(new_doc)
+                doc_exists = False
+                for i in range(len(existing_posting_list)):
+                    if existing_posting_list[i].id == document_id:
+                        existing_posting_list[i].add_position(token_index +1)
+                        doc_exists = True
+                if doc_exists == False:
+                    new_doc = Document(document_id, token_index + 1)
+                    existing_posting_list.append(new_doc)
 
     # Print out inverted index
     def __repr__(self):
@@ -119,7 +124,6 @@ class InvertedIndex(DocumentProcessing):
 
 
 """Deals with search queries."""
-
 
 class SearchEngine(DocumentProcessing):
     def __init__(self, inverted_index):
@@ -433,7 +437,6 @@ class NaiveBayesClassifier(DocumentProcessing):
             predictions_df.to_csv("test_predictions.csv")
             return predictions_df
         # predictions_df.to_csv("test_predictions.csv")
-
 
 
 # if __name__ == "__main__":
