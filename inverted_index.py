@@ -16,7 +16,7 @@ import sys
 
 
 class Document():
-    def __init__(self, document_id, position):
+    def __init__(self, document_id, position, term_weight = False):
         self.id = document_id
         self.positions = []
         self.add_position(position)
@@ -24,6 +24,15 @@ class Document():
     # Adds a position of a term to the Doc object.
     def add_position(self, position):
         self.positions.append(position)
+
+
+class DocumentVSM():
+    def __init__(self, document_id):
+        self.id = document_id
+        self.tw = 1
+
+    def increment_frequency(self):
+        self.tw += 1
 
 
 """ Parent class for InvertedIndex and SearchEngine. 
@@ -289,19 +298,6 @@ class ClassifierDataFrame():
                                        columns=["class"]).reset_index(drop=True)
 
 
-def load_data(directory, inv_index, classifier_df):
-    current_directory = os.getcwd()
-    doc_directory = os.path.join(current_directory, directory)
-    for class_ in os.listdir(doc_directory):
-        class_docs_loc = os.path.join(doc_directory, class_)
-        if(os.path.isdir(class_docs_loc)):
-            for class_document in os.listdir(class_docs_loc):
-                if not class_document.startswith("."):
-                    doc_location = os.path.join(class_docs_loc, class_document)
-                    classifier_df.add_document(doc_location, class_)
-                    inv_index.parse_document(doc_location)
-
-
 class NaiveBayesClassifier(DocumentProcessing):
     def __init__(self, Classifier_df):
         self.raw_data = None
@@ -440,17 +436,43 @@ class NaiveBayesClassifier(DocumentProcessing):
         # predictions_df.to_csv("test_predictions.csv")
 
 
+class VectorSpaceModel():
+    def __init__(self):
+        pass
+
+
+
+def load_data(directory, inv_index, classifier_df):
+    current_directory = os.getcwd()
+    doc_directory = os.path.join(current_directory, directory)
+    for class_ in os.listdir(doc_directory):
+        class_docs_loc = os.path.join(doc_directory, class_)
+        if(os.path.isdir(class_docs_loc)):
+            for class_document in os.listdir(class_docs_loc):
+                if not class_document.startswith("."):
+                    doc_location = os.path.join(class_docs_loc, class_document)
+                    classifier_df.add_document(doc_location, class_)
+                    inv_index.parse_document(doc_location)
+
+
 if __name__ == "__main__":
-    inv_index = pickle.load(open("test_inv_index.p", "rb"))
-    classifer_df = pickle.load(open("test_classifier.p", "rb"))
-
-
-    # testing
     # inv_index = InvertedIndex()
     # classifer_df = ClassifierDataFrame()
-    # load_data("test", inv_index, classifer_df)
-    # pickle.dump(inv_index, open("test_inv_index.p", "wb+"))
-    # pickle.dump(classifer_df, open("test_classifier.p", "wb+"))
+    # load_data("documents", inv_index, classifer_df)
+    # pickle.dump(inv_index, open("Inverted_Index.p", "wb+"))
+    # pickle.dump(classifer_df, open("raw_data_df.p", "wb+"))
+
+    inv_index = pickle.load(open("Inverted_Index.p", "rb"))
+    cl_df = pickle.load(open("raw_data_df.p", "rb"))
+    nb = pickle.load(open("Naive_Bayes.p", "rb"))
+    predictions_multinomial = nb.predict_multiple(cl_df.X_test, "m")
+    predictions_bernoulli = nb.predict_multiple(cl_df.X_test, "b")
+    predictions_multinomial.to_csv("multinomial_predictions.csv")
+    predictions_bernoulli.to_csv("bernoulli_predictions.csv")
+
+    # predictions = nb.predict_multiple(cl_df.X_test)
+    # print(predictions)
+    # #
 
 
     # df = pickle.load(open("raw_data_df.p", "rb"))
