@@ -293,8 +293,8 @@ def load_data(directory, inv_index, classifier_df):
                     inv_index.parse_document(doc_location)
 
 
-class NaiveBayesClassifier(DocumentProcessing, mode="multinomial"):
-    def __init__(self, Classifier_df):
+class NaiveBayesClassifier(DocumentProcessing):
+    def __init__(self, Classifier_df, mode="multinomial"):
         self.raw_data = None
         self.mode = mode
         self.raw_training_documents = Classifier_df.X_train
@@ -398,44 +398,49 @@ class NaiveBayesClassifier(DocumentProcessing, mode="multinomial"):
                         output += np.log(1/(self.class_vocab_count[class_value] + 1))
             return max(argmax, key=argmax.get)
 
-        # tokens = self.pre_process(test, remove_stopwords=True, stemming=True)
-        # maxima = dict()
-        # for class_value in self.class_values:
-        #     class_df = self.conditional_probabilities[class_value]
-        #     output = self.priors[class_value]
-        #     for word in tokens:
-        #         if word in class_df.terms.unique():
-        #             instance = float(class_df[class_df.terms == word].loc[:,"conditional_probability"])
-        #             output += np.log(instance)
-        #         else:
-        #             output += np.log(1/(self.class_vocab_count[class_value] + 1))
-        #     maxima[class_value] = output
-        # return max(maxima, key=maxima.get)
-
     def predict_multiple(self, testing_df):
         predictions = []
-        for document_content in testing_df["document_contents"].values:
-            tokens = self.pre_process(str(document_content))
-            maxima = dict()
-            for class_value in self.class_values:
-                class_df = self.conditional_probabilities[class_value]
-                output = self.priors[class_value]
-                for word in tokens:
-                    if word in class_df.terms.unique():
+        if self.model == "bernoulli":
+            for document_content in testing_df["document_contents"].values:
+                tokens = self.pre_process(str(document_content))
+                maxima = dict()
+                for class_value in self.class_values:
+                    class_df = self.conditional_probabilities[class_value]
+                    output = self.priors[class_value]
+                    for word in tokens:
+                        if word in class_df.terms.unique():
+                            instance = float(class_df[class_df.terms == word].loc[:, "conditional_probability"])
+                            output += np.log(instance)
+                        else:
+                            output += np.log(1 / (self.class_vocab_count[class_value] + 1))
+                    maxima[class_value] = output
+                predictions.append(max(maxima, key=maxima.get))
+            predictions_df = pd.DataFrame(predictions, columns=["class_predictions"])
+            predictions_df.to_csv("test_predictions.csv")
+            return predictions_df
+        elif self.model == "multinomial":
+            for document_content in testing_df["document_contents"].values:
+                tokens = self.pre_process(str(document_content))
+                maxima = dict()
+                for class_value in self.class_values:
+                    class_df = self.conditional_probabilities[class_value]
+                    output = self.priors[class_value]
+                    for word in np.array(class_df.terms):
                         instance = float(class_df[class_df.terms == word].loc[:, "conditional_probability"])
-                        output += np.log(instance)
-                    else:
-                        output += np.log(1 / (self.class_vocab_count[class_value] + 1))
-                maxima[class_value] = output
-            predictions.append(max(maxima, key=maxima.get))
-        predictions_df = pd.DataFrame(predictions, columns=["class_predictions"])
-        predictions_df.to_csv("test_predictions.csv")
-        return predictions_df
+                        if word in tokens:
+                            output += np.log(instance)
+                        else:
+                            output += 1 - np.log(instance)
+                    maxima[class_value] = output
+                predictions.append(max(maxima, key=maxima.get))
+            predictions_df = pd.DataFrame(predictions, columns=["class_predictions"])
+            predictions_df.to_csv("test_predictions.csv")
+            return predictions_df
         # predictions_df.to_csv("test_predictions.csv")
 
 
 
-if __name__ == "__main__":
+# if __name__ == "__main__":
     # df = pickle.load(open("raw_data_df.p", "rb"))
     # nb = pickle.load(open("Naive_Bayes.p", "rb"))
     # predictions = pd.read_csv("test_predictions.csv")
