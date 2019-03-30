@@ -10,6 +10,7 @@ import pandas as pd
 import pickle
 from sklearn.metrics import f1_score, precision_score, recall_score, confusion_matrix
 from sklearn.model_selection import StratifiedShuffleSplit
+import sys
 
 """ Stores Document ID and positions of a term """
 
@@ -292,9 +293,10 @@ def load_data(directory, inv_index, classifier_df):
                     inv_index.parse_document(doc_location)
 
 
-class NaiveBayesClassifier(DocumentProcessing):
+class NaiveBayesClassifier(DocumentProcessing, mode="multinomial"):
     def __init__(self, Classifier_df):
         self.raw_data = None
+        self.mode = mode
         self.raw_training_documents = Classifier_df.X_train
         self.training_class_labels = Classifier_df.y_train
         self.priors = dict()
@@ -368,22 +370,47 @@ class NaiveBayesClassifier(DocumentProcessing):
         # Calculate F score
         # Create Confusion Matrix
 
-
-
-    def predict_single(self, test):
-        tokens = self.pre_process(test, remove_stopwords=True, stemming=True)
-        maxima = dict()
-        for class_value in self.class_values:
-            class_df = self.conditional_probabilities[class_value]
-            output = self.priors[class_value]
-            for word in tokens:
-                if word in class_df.terms.unique():
+    def predict_single(self, pred_doc):
+        tokens = self.pre_process(pred_doc, remove_stopwords=True, stemming=True)
+        argmax = dict()
+        if self.mode == "bernoulli":
+            for class_value in self.class_values:
+                class_df = self.conditional_probabilities[class_value]
+                output = self.priors[class_value]
+                for word in np.array(class_df.terms):
                     instance = float(class_df[class_df.terms == word].loc[:,"conditional_probability"])
-                    output += np.log(instance)
-                else:
-                    output += np.log(1/(self.class_vocab_count[class_value] + 1))
-            maxima[class_value] = output
-        return max(maxima, key=maxima.get)
+                    if word in tokens:
+                        output += np.log(instance)
+                    else:
+                        output += 1 - np.log(instance)
+                argmax[class_value] = output
+            return max(argmax, key=argmax.get)
+
+        elif self.mode == "multinomial":
+            for class_value in self.class_values:
+                class_df = self.conditional_probabilities[class_value]
+                output = self.priors[class_value]
+                for word in tokens:
+                    if word in class_df.terms.unique():
+                        instance = float(class_df[class_df.terms == word].loc[:,"conditional_probability"])
+                        output += np.log(instance)
+                    else:
+                        output += np.log(1/(self.class_vocab_count[class_value] + 1))
+            return max(argmax, key=argmax.get)
+
+        # tokens = self.pre_process(test, remove_stopwords=True, stemming=True)
+        # maxima = dict()
+        # for class_value in self.class_values:
+        #     class_df = self.conditional_probabilities[class_value]
+        #     output = self.priors[class_value]
+        #     for word in tokens:
+        #         if word in class_df.terms.unique():
+        #             instance = float(class_df[class_df.terms == word].loc[:,"conditional_probability"])
+        #             output += np.log(instance)
+        #         else:
+        #             output += np.log(1/(self.class_vocab_count[class_value] + 1))
+        #     maxima[class_value] = output
+        # return max(maxima, key=maxima.get)
 
     def predict_multiple(self, testing_df):
         predictions = []
@@ -407,13 +434,24 @@ class NaiveBayesClassifier(DocumentProcessing):
         # predictions_df.to_csv("test_predictions.csv")
 
 
+
 if __name__ == "__main__":
-    df = pickle.load(open("raw_data_df.p", "rb"))
-    nb = pickle.load(open("Naive_Bayes.p", "rb"))
-    predictions = pd.read_csv("test_predictions.csv")
-    encoded_test = df.y_test["class"].map({"politics":0, "entertainment":1,"sport":2,"business":3, "tech" :4}).values
-    encoded_pred = predictions["class_predictions"].map({"politics":0, "entertainment":1,"sport":2,"business":3, "tech" :4}).values
-    precision, recall, fscore, conf_mat = nb.calculate_metrics(encoded_pred, encoded_test)
-    print("Precision : {}".format(precision))
-    print("Recall : {}".format(recall))
-    print("F1 Score : {}".format(fscore))
+    # df = pickle.load(open("raw_data_df.p", "rb"))
+    # nb = pickle.load(open("Naive_Bayes.p", "rb"))
+    # predictions = pd.read_csv("test_predictions.csv")
+    # encoded_test = df.y_test["class"].map({"politics":0, "entertainment":1,"sport":2,"business":3, "tech" :4}).values
+    # encoded_pred = predictions["class_predictions"].map({"politics":0, "entertainment":1,"sport":2,"business":3, "tech" :4}).values
+    # precision, recall, fscore, conf_mat = nb.calculate_metrics(encoded_pred, encoded_test)
+    # print("Precision : {}".format(precision))
+    # print("Recall : {}".format(recall))
+    # print("F1 Score : {}".format(fscore))
+
+    # if sys.argv[1] == "--nb":
+    #     document_name = sys.argv[2]
+    #     print("Using Naive Bayes Classifier to predict given document: {} ".format(document_name))
+    #     nb_model = pickle.load(open("Naive_Bayes.p", "rb"))
+    #
+    # elif sys.argv[1] == "--bs":
+    #     print("Boolean Search")
+    # elif sys.argv[1] == "--vsm":
+    #     print("Vector Space Model")
