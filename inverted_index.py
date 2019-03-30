@@ -313,8 +313,9 @@ class NaiveBayesClassifier(DocumentProcessing):
         consolidated_df = pd.concat([self.raw_training_documents, self.training_class_labels], axis=1)
         self.raw_data = consolidated_df
 
-    def get_conditional_probability(self):
-        pass
+    def get_conditional_probability(self, word, class_value):
+        class_df = self.conditional_probabilities[class_value]
+        return float(class_df[class_df.terms == word].loc[:, "conditional_probability"])
 
     def get_prior_probability(self):
         pass
@@ -378,7 +379,7 @@ class NaiveBayesClassifier(DocumentProcessing):
                 class_df = self.conditional_probabilities[class_value]
                 output = self.priors[class_value]
                 for word in np.array(class_df.terms):
-                    instance = float(class_df[class_df.terms == word].loc[:,"conditional_probability"])
+                    instance = self.get_conditional_probability(word, class_value)
                     if word in tokens:
                         output += np.log(instance)
                     else:
@@ -392,7 +393,7 @@ class NaiveBayesClassifier(DocumentProcessing):
                 output = self.priors[class_value]
                 for word in tokens:
                     if word in class_df.terms.unique():
-                        instance = float(class_df[class_df.terms == word].loc[:,"conditional_probability"])
+                        instance = self.get_conditional_probability(word, class_value)
                         output += np.log(instance)
                     else:
                         output += np.log(1/(self.class_vocab_count[class_value] + 1))
@@ -409,7 +410,7 @@ class NaiveBayesClassifier(DocumentProcessing):
                     output = self.priors[class_value]
                     for word in tokens:
                         if word in class_df.terms.unique():
-                            instance = float(class_df[class_df.terms == word].loc[:, "conditional_probability"])
+                            instance = self.get_conditional_probability(word, class_value)
                             output += np.log(instance)
                         else:
                             output += np.log(1 / (self.class_vocab_count[class_value] + 1))
@@ -426,7 +427,7 @@ class NaiveBayesClassifier(DocumentProcessing):
                     class_df = self.conditional_probabilities[class_value]
                     output = self.priors[class_value]
                     for word in np.array(class_df.terms):
-                        instance = float(class_df[class_df.terms == word].loc[:, "conditional_probability"])
+                        instance = self.get_conditional_probability(word, class_value)
                         if word in tokens:
                             output += np.log(instance)
                         else:
