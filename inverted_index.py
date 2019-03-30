@@ -37,9 +37,10 @@ class DocumentProcessing():
     # Remove stop words and perform stemming
     def pre_process(self, document_content, remove_stopwords=False, stemming=False):
         preprocessed_tokens = nltk.word_tokenize(document_content)
+        preprocessed_tokens = [word.lower() for word in preprocessed_tokens]
         if remove_stopwords:
             stop_words = set(stopwords.words('english') + list(punctuation))
-            preprocessed_tokens = [word.lower() for word in preprocessed_tokens if not word in stop_words]
+            preprocessed_tokens = [word for word in preprocessed_tokens if not word in stop_words]
         if stemming:
             stemmer = PorterStemmer()
             preprocessed_tokens = [stemmer.stem(word) for word in preprocessed_tokens]
@@ -62,7 +63,7 @@ class InvertedIndex(DocumentProcessing):
     # Assign a new document id for new documents
     def assign_document_id(self):
         InvertedIndex.num_documents += 1
-        return InvertedIndex.num_documents
+        return InvertedIndex.num_documents - 1
 
     # Parses a new document, preprocesses it and updates the inverted index
     def parse_document(self, file_name):
@@ -439,7 +440,19 @@ class NaiveBayesClassifier(DocumentProcessing):
         # predictions_df.to_csv("test_predictions.csv")
 
 
-# if __name__ == "__main__":
+if __name__ == "__main__":
+    inv_index = pickle.load(open("test_inv_index.p", "rb"))
+    classifer_df = pickle.load(open("test_classifier.p", "rb"))
+
+
+    # testing
+    # inv_index = InvertedIndex()
+    # classifer_df = ClassifierDataFrame()
+    # load_data("test", inv_index, classifer_df)
+    # pickle.dump(inv_index, open("test_inv_index.p", "wb+"))
+    # pickle.dump(classifer_df, open("test_classifier.p", "wb+"))
+
+
     # df = pickle.load(open("raw_data_df.p", "rb"))
     # nb = pickle.load(open("Naive_Bayes.p", "rb"))
     # predictions = pd.read_csv("test_predictions.csv")
@@ -450,14 +463,14 @@ class NaiveBayesClassifier(DocumentProcessing):
     # print("Recall : {}".format(recall))
     # print("F1 Score : {}".format(fscore))
 
-    if sys.argv[1] == "--nb":
-        mode = sys.argv[2]
-        document_name = sys.argv[3]
-        print("Using Naive Bayes Classifier to predict given document: {} ".format(document_name))
-        nb_model = pickle.load(open("Naive_Bayes.p", "rb"))
-        prediction = nb_model.predict_single(document_name, mode)
-
-    elif sys.argv[1] == "--bs":
-        print("Boolean Search")
-    elif sys.argv[1] == "--vsm":
-        print("Vector Space Model")
+    # if sys.argv[1] == "--nb":
+    #     mode = sys.argv[2]
+    #     document_name = sys.argv[3]
+    #     print("Using Naive Bayes Classifier to predict given document: {} ".format(document_name))
+    #     nb_model = pickle.load(open("Naive_Bayes.p", "rb"))
+    #     prediction = nb_model.predict_single(document_name, mode)
+    #
+    # elif sys.argv[1] == "--bs":
+    #     print("Boolean Search")
+    # elif sys.argv[1] == "--vsm":
+    #     print("Vector Space Model")
