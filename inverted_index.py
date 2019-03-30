@@ -274,10 +274,14 @@ class ClassifierDataFrame():
         self.split_target_features()
         stratified_split = StratifiedShuffleSplit(n_splits=1, test_size=t_size, random_state=7)
         for train_index, test_index in stratified_split.split(self.features, self.target):
-            self.X_train = pd.DataFrame(np.reshape(self.features.loc[train_index].values, (-1,1)), columns=["document_contents"]).reset_index(drop=True)
-            self.y_train = pd.DataFrame(np.reshape(self.target.loc[train_index].values, (-1,1)), columns=["class"]).reset_index(drop=True)
-            self.X_test = pd.DataFrame(np.reshape(self.features.loc[test_index].values, (-1,1)), columns=["document_contents"]).reset_index(drop=True)
-            self.y_test = pd.DataFrame(np.reshape(self.target.loc[test_index].values, (-1,1)), columns=["class"]).reset_index(drop=True)
+            self.X_train = pd.DataFrame(np.reshape(self.features.loc[train_index].values, (-1,1)), \
+                                        columns=["document_contents"]).reset_index(drop=True)
+            self.y_train = pd.DataFrame(np.reshape(self.target.loc[train_index].values, (-1,1)), \
+                                        columns=["class"]).reset_index(drop=True)
+            self.X_test = pd.DataFrame(np.reshape(self.features.loc[test_index].values, (-1,1)), \
+                                       columns=["document_contents"]).reset_index(drop=True)
+            self.y_test = pd.DataFrame(np.reshape(self.target.loc[test_index].values, (-1,1)), \
+                                       columns=["class"]).reset_index(drop=True)
 
 
 def load_data(directory, inv_index, classifier_df):
@@ -362,15 +366,11 @@ class NaiveBayesClassifier(DocumentProcessing):
         f_score = f1_score(testing_labels, predictions, average="weighted")
         confusion_mat = confusion_matrix(testing_labels, predictions)
         return precision, recall, f_score, confusion_mat
-        # Calculate Precision
-        # Calculate Recall
-        # Calculate F score
-        # Create Confusion Matrix
 
     def predict_single(self, pred_doc, mode):
         tokens = self.pre_process(pred_doc, remove_stopwords=True, stemming=True)
         argmax = dict()
-        if mode == "bernoulli":
+        if mode == "b": # bernoulli
             for class_value in self.class_values:
                 class_df = self.conditional_probabilities[class_value]
                 output = self.priors[class_value]
@@ -382,8 +382,7 @@ class NaiveBayesClassifier(DocumentProcessing):
                         output += 1 - np.log(instance)
                 argmax[class_value] = output
             return max(argmax, key=argmax.get)
-
-        elif mode == "multinomial":
+        elif mode == "m": # multinomial
             for class_value in self.class_values:
                 class_df = self.conditional_probabilities[class_value]
                 output = self.priors[class_value]
@@ -397,7 +396,7 @@ class NaiveBayesClassifier(DocumentProcessing):
 
     def predict_multiple(self, testing_df, mode):
         predictions = []
-        if mode == "bernoulli":
+        if mode == "b": #bernoulli
             for document_content in testing_df["document_contents"].values:
                 tokens = self.pre_process(str(document_content))
                 maxima = dict()
@@ -415,7 +414,7 @@ class NaiveBayesClassifier(DocumentProcessing):
             predictions_df = pd.DataFrame(predictions, columns=["class_predictions"])
             predictions_df.to_csv("test_predictions.csv")
             return predictions_df
-        elif mode == "multinomial":
+        elif mode == "m": # multinomial
             for document_content in testing_df["document_contents"].values:
                 tokens = self.pre_process(str(document_content))
                 maxima = dict()
@@ -448,12 +447,14 @@ class NaiveBayesClassifier(DocumentProcessing):
     # print("Recall : {}".format(recall))
     # print("F1 Score : {}".format(fscore))
 
-    # if sys.argv[1] == "--nb":
-    #     document_name = sys.argv[2]
-    #     print("Using Naive Bayes Classifier to predict given document: {} ".format(document_name))
-    #     nb_model = pickle.load(open("Naive_Bayes.p", "rb"))
-    #
-    # elif sys.argv[1] == "--bs":
-    #     print("Boolean Search")
-    # elif sys.argv[1] == "--vsm":
-    #     print("Vector Space Model")
+    if sys.argv[1] == "--nb":
+        mode = sys.argv[2]
+        document_name = sys.argv[3]
+        print("Using Naive Bayes Classifier to predict given document: {} ".format(document_name))
+        nb_model = pickle.load(open("Naive_Bayes.p", "rb"))
+        prediction = nb_model.predict_single(document_name, mode)
+
+    elif sys.argv[1] == "--bs":
+        print("Boolean Search")
+    elif sys.argv[1] == "--vsm":
+        print("Vector Space Model")
