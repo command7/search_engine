@@ -162,6 +162,8 @@ class InvertedIndex(DocumentProcessing):
                     self.docLengths[indiv_doc.id] += np.square(tfidf)
                 else:
                     self.docLengths[indiv_doc.id] = np.square(tfidf)
+        for i in range(len(self.docLengths)):
+            self.docLengths[i] = np.sqrt(self.docLengths[i])
 
     # Print out inverted index
     def __repr__(self):
