@@ -8,6 +8,12 @@ An Information Retrieval system that is capable of accommodating
 *   Free text queries
 *   Naive Bayes Classification
 
+## Disclaimer
+
+On using the search engine, only the first 100 characters of each found 
+document will be printed in the command line. The entire output will be 
+written to a text file called **query_results.txt**.
+
 ## Dependencies Required
 
 * Pandas
