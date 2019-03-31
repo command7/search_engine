@@ -1,4 +1,4 @@
-# text_classification
+# Information Retrieval & Classification
 
 ## Description
 
