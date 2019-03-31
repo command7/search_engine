@@ -415,8 +415,8 @@ class NaiveBayesClassifier(DocumentProcessing):
 
     def fit(self):
         for class_value in self.class_values:
-            self.calculate_probabilities(class_value)
             self.build_bernoulli_index(class_value)
+            self.calculate_probabilities(class_value)
 
     def build_bernoulli_index(self, class_value):
         class_docs = list(self.raw_data[self.raw_data["class"] == class_value].copy()["document_contents"])
@@ -437,6 +437,7 @@ class NaiveBayesClassifier(DocumentProcessing):
         terms = list()
         voc_count = 0
         num_instances = list()
+        num_docs = list()
         class_docs = list(self.raw_data[self.raw_data["class"] == class_value].copy()["document_contents"])
         N_c = len(class_docs)
         prior = np.log(N_c / self.N)
