@@ -8,6 +8,16 @@ An Information Retrieval system that is capable of accommodating
 *   Free text queries
 *   Naive Bayes Classification
 
+## Class values for Naive Bayes Classification
+
+The Naive Bayes classifier classifies documents into 5 class values namely
+
+* Business
+* Entertainment
+* Politics
+* Technology
+* Sports
+
 ## Disclaimer
 
 On using the search engine, only the first 100 characters of each found 
