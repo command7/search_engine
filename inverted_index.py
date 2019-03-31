@@ -422,8 +422,8 @@ class NaiveBayesClassifier(DocumentProcessing):
         class_docs = list(self.raw_data[self.raw_data["class"] == class_value].copy()["document_contents"])
         inverted_index = InvertedIndex(auto_load=False)
         for class_doc in class_docs:
-
-
+            inverted_index.load_data(class_doc, is_text=True)
+        self.bernoulli_index[class_value] = inverted_index
 
     def parse_vocabulary(self):
         for class_value_ in self.class_values:
