@@ -15,6 +15,14 @@ An Information Retrieval system that is capable of accommodating
 * Nltk
 * Pickle
 
+## Command Line Parameters
+
+| Parameter     | Feature       |
+| ------------- |:-------------:|
+| --bs          | Boolean Search using Inverted Index |
+| --ps      | Positional Search using Inverted Index   |
+| --vsm | Free text search using Vector Space Model      |
+| --nb | Naive Bayes Classification (Multinomial) |
 ## How To Run
 
 Currently this is a command line application and the following commands can 
@@ -55,8 +63,11 @@ Free text Queries
 
 Test Classification Documents
 
-* test_1.txt
-* test_2.txt 
+* politics_1.txt
+* sport_1.txt
+* entertainment_1.txt
+* business_1.txt
+* tech_1.txt 
 
 
 
