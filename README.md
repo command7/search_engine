@@ -12,9 +12,8 @@ An Information Retrieval system that is capable of accommodating
 
 * Pandas
 * Numpy
-* nltk
-* pickle
-* sklearn (For calculation of performance metrics)
+* Nltk
+* Pickle
 
 ## How To Run
 
@@ -38,6 +37,28 @@ be used to utilize the features of the system.
 > search_engine.py --nb document_path
 
 Where document_path = Location of document to classify
+
+### Test Queries to check functionality
+
+AND Queries
+* Jackie Ballard Parliament
+* Research and Development
+
+Positional Queries
+
+* Idowu made his breakthrough
+* Third generation mobile
+
+Free text Queries
+* Cyber computers government
+* Actress actor theatre
+
+Test Classification Documents
+
+* test_1.txt
+* test_2.txt 
+
+
 
 ## Examples
 
