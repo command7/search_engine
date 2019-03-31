@@ -9,7 +9,7 @@ import operator
 import pandas as pd
 import pickle
 from sklearn.metrics import f1_score, precision_score, recall_score, \
-    confusion_matrix, accuracy_score
+    accuracy_score
 from sklearn.model_selection import StratifiedShuffleSplit
 import sys
 
@@ -19,7 +19,7 @@ import sys
 """
 
 
-class Document():
+class Document:
     def __init__(self, document_id, *args, store_term_weights=False):
         """
         Stores document_id, position if store_term_weights is False and
@@ -53,16 +53,12 @@ class Document():
 
 
 """ Parent class for InvertedIndex and SearchEngine.
-Deals with preprocessing queries and document text as well as retreiving
+Deals with pre-processing queries and document text as well as retrieving
 posting lists."""
 
 
-class DocumentProcessing():
-    def __init__(self):
+class DocumentProcessing:
 
-        self.documents = 0
-
-    # Remove stop words and perform stemming
     def pre_process(self, document_content, remove_stopwords=False,
                     stemming=False):
         """
@@ -95,7 +91,8 @@ class DocumentProcessing():
         return self.posting_lists[term_index]
 
 
-""" Storage class for parsing documents and constructing inverted index. """
+""" Inverted Index used to store contents of documents after parsing and 
+preprocessing them. """
 
 
 class InvertedIndex(DocumentProcessing):
@@ -167,8 +164,14 @@ class InvertedIndex(DocumentProcessing):
         InvertedIndex.num_documents += 1
         return InvertedIndex.num_documents - 1
 
-    # Parses a new document, preprocesses it and updates the inverted index
     def parse_document(self, file_name, ignore_stopwords, is_text=False):
+        """
+        Parse a document and update inverted index with its terms.
+        :param file_name: Path to document
+        :param ignore_stopwords: If stopwords should be excluded or included
+        :param is_text: If document give in text of a path
+        :return: None
+        """
         document_id = self.assign_document_id()
         if is_text:
             document_text = file_name
@@ -183,12 +186,20 @@ class InvertedIndex(DocumentProcessing):
             processed_tokens = self.pre_process(document_text, stemming=True)
         self.update_inv_index(processed_tokens, document_id)
 
-    # Adds the document to storage
     def add_document(self, document_content):
+        """
+        Add document's entire content as a whole to inverted index.
+        :param document_content: Content of document as text.
+        :return: None
+        """
         self.documents.append(document_content)
 
-    # Reads a document and returns its content as a string
     def read_text_file(self, filename):
+        """
+
+        :param filename:
+        :return:
+        """
         current_dir = os.getcwd()
         doc_path = os.path.join(current_dir, filename)
         try:
@@ -203,7 +214,7 @@ class InvertedIndex(DocumentProcessing):
     # Update inverted index otherwise.
     def update_inv_index(self, processed_tokens, document_id):
         for token_index in range(0, len(processed_tokens)):
-            if (processed_tokens[token_index] not in self.terms):
+            if processed_tokens[token_index] not in self.terms:
                 self.terms.append(processed_tokens[token_index])
                 new_postings_list = list()
                 if self.purpose == "vsm":
@@ -264,11 +275,19 @@ class InvertedIndex(DocumentProcessing):
         return output
 
 
-"""Deals with search queries."""
+"""Search Engine that seaches for documents matching a certain criteria and 
+provides the user with those documents.
+."""
 
 
 class SearchEngine(DocumentProcessing):
     def __init__(self, inverted_index):
+        """
+        Derive purpose, terms, documents, posting_lists and docLengths from
+        the inverted index supplied.
+        :param inverted_index: Inverted Index object that contains loaded
+        data.
+        """
         self.purpose = inverted_index.purpose
         self.terms = inverted_index.terms
         self.documents = inverted_index.documents
@@ -276,16 +295,19 @@ class SearchEngine(DocumentProcessing):
         if self.purpose == "vsm":
             self.docLengths = inverted_index.docLengths
 
-    # Provide a string query and returns a posting list with
-    # Documents containing all the terms
     def boolean_and_query(self, query):
+        """
+        Provides documents that match the given boolean query
+        :param query: Boolean search query
+        :return: list of documents (Document) that match the criteria
+        """
         tokenized_query = self.pre_process(
             query, remove_stopwords=True, stemming=True)
         processed_query = self.sort_on_tf(tokenized_query)
         query_results = None
         all_terms_exist = True
         for token in processed_query:
-            if (self.check_existence(token) is False):
+            if self.check_existence(token) is False:
                 all_terms_exist = False
         if all_terms_exist:
             if len(processed_query) == 2:
@@ -309,8 +331,12 @@ class SearchEngine(DocumentProcessing):
             return None
         return query_results
 
-    # Returns tokens sorted in terms of document frequency
     def sort_on_tf(self, query_tokens):
+        """
+        Sort terms according to the number of documents that contain them.
+        :param query_tokens: List of terms that need to be sorted
+        :return: List of sorted terms
+        """
         tf_info = {}
         sorted_terms = []
         for token in query_tokens:
@@ -320,13 +346,18 @@ class SearchEngine(DocumentProcessing):
             sorted_terms.append(term_info[0])
         return sorted_terms
 
-    # Returns documents containing query terms in order
     def positional_search(self, query):
+        """
+        Accomodates free text search returning documents that contain terms
+        in the same order as the query.
+        :param query: Search query
+        :return: List of documents that match the search criteria
+        """
         processed_query = self.pre_process(query)
         query_results = None
         all_terms_exist = True
         for token in processed_query:
-            if (self.check_existence(token) is False):
+            if self.check_existence(token) is False:
                 all_terms_exist = False
         if all_terms_exist:
             if len(processed_query) == 2:
@@ -350,23 +381,35 @@ class SearchEngine(DocumentProcessing):
             return None
         return query_results
 
-    # Compare postings lists using merge algorithm
     def merge_intersect(self, post_list_one, post_list_two):
+        """
+        Use merge algorithm to find documents existing in both posting lists.
+        :param post_list_one: Posting list of first term
+        :param post_list_two: Posting List of second term
+        :return: Posting List containing documents existing in both input
+        posting lists.
+        """
         intersect_documents = []
         pointer_one = 0
         pointer_two = 0
         while pointer_one < len(post_list_one) and pointer_two < len(post_list_two):
-            if (post_list_one[pointer_one].id == post_list_two[pointer_two].id):
+            if post_list_one[pointer_one].id == post_list_two[pointer_two].id:
                 intersect_documents.append(post_list_two[pointer_two])
                 pointer_one += 1
                 pointer_two += 1
-            elif (post_list_one[pointer_one].id > post_list_two[pointer_two].id):
+            elif post_list_one[pointer_one].id > post_list_two[pointer_two].id:
                 pointer_two += 1
             else:
                 pointer_one += 1
         return intersect_documents
 
     def ranked_search(self, query):
+        """
+        Search for top 10 documents that match the query using Vector Space
+        Model scores.
+        :param query: Search query
+        :return: Top 10 documents that match the search criteria
+        """
         vsm_scores = dict()
         if self.purpose == "bs":
             print("Cannot proceed as Inverted Index supplied does not "
@@ -403,22 +446,24 @@ class SearchEngine(DocumentProcessing):
                                for rank in range(0, len(ranked_results))]
             return result_docs
 
-    # Prints out search results
-    def print_search_results(self, result_docs):
-        if len(result_docs) == 0:
-            print("No documents found.")
-        else:
-            for result_doc in result_docs:
-                print(self.documents[result_doc.id - 1])
-
-    # Checks if a term exists in dictionary
     def check_existence(self, term):
+        """
+        Check if a term exists in memory
+        :param term: Term to be searched for
+        :return: True / False based on whether it exists
+        """
         if (term in self.terms):
             return True
         return False
 
-    # Compare postings lists to check if terms appear in order
     def positional_intersect(self, post_list_one, post_list_two):
+        """
+        Use merge algorithm to find documents that contain two terms in order.
+        :param post_list_one: Posting list of first term
+        :param post_list_two: Posting list of second term
+        :return: Posting List containing documents that have the two terms
+        in order
+        """
         intersect_documents = []
         pointer_one = 0
         pointer_two = 0
@@ -430,7 +475,8 @@ class SearchEngine(DocumentProcessing):
                 pos_point_1 = 0
                 pos_point_2 = 0
                 match_found = False
-                while pos_point_1 < len(position_list_1) and match_found is False:
+                while pos_point_1 < len(position_list_1) and match_found is \
+                        False:
                     while pos_point_2 < len(position_list_2) and match_found is False:
                         if position_list_1[pos_point_1] - \
                                 position_list_2[pos_point_2] == -1:
@@ -450,7 +496,12 @@ class SearchEngine(DocumentProcessing):
         return intersect_documents
 
 
-class ClassifierDataFrame():
+""" Stores training and testing set documents and their class values in a 
+Pandas Data Frame.
+"""
+
+
+class ClassifierDataFrame:
     def __init__(self):
         self.columns = ["document_contents", "class"]
         self.df = pd.DataFrame(columns=self.columns)
@@ -462,6 +513,12 @@ class ClassifierDataFrame():
         self.y_test = None
 
     def add_document(self, file_name, class_value):
+        """
+        Add document to memory
+        :param file_name: Path to document
+        :param class_value: Class value it belongs to
+        :return:None
+        """
         try:
             with open(file_name) as document:
                 data_instance = pd.DataFrame([[document.read(), class_value]],
@@ -473,10 +530,19 @@ class ClassifierDataFrame():
                                                              class_value))
 
     def split_target_features(self):
+        """
+        Split data frame into target and features
+        :return: None
+        """
         self.features = self.df["document_contents"].copy()
         self.target = self.df["class"].copy()
 
     def split_training_testing_set(self, t_size):
+        """
+        Split data set into training and testing data
+        :param t_size: Size of testing set
+        :return: None
+        """
         self.split_target_features()
         stratified_split = StratifiedShuffleSplit(n_splits=1,
                                                   test_size=t_size, random_state=7)
@@ -489,6 +555,11 @@ class ClassifierDataFrame():
                                        columns=["document_contents"]).reset_index(drop=True)
             self.y_test = pd.DataFrame(np.reshape(self.target.loc[test_index].values, (-1, 1)),
                                        columns=["class"]).reset_index(drop=True)
+
+
+""" Naive Bayes classifier that classifies documents into class values based on 
+Bayes Rule
+"""
 
 
 class NaiveBayesClassifier(DocumentProcessing):
@@ -509,24 +580,52 @@ class NaiveBayesClassifier(DocumentProcessing):
         self.bernoulli_index = dict()
 
     def consolidate_training_set(self):
+        """
+        Combine target and features into a single dataframe.
+        :return: None
+        """
         consolidated_df = pd.concat([self.raw_training_documents,
                                      self.training_class_labels], axis=1)
         self.raw_data = consolidated_df
 
     def get_conditional_probability(self, word, class_value):
+        """
+        Get P(word|class) for a term.
+        :param word: Term
+        :param class_value: Class value
+        :return: Conditional Probability P(term|class)
+        """
         class_df = self.conditional_probabilities[class_value]
-        return float(class_df[class_df.terms == word].loc[:, "conditional_probability"])
+        return float(class_df[class_df.terms == word].loc[:,
+                     "conditional_probability"])
 
     def get_bernoulli_condition_probability(self, word, class_value):
+        """
+        Get P(term|class) for bernoulli model
+        :param word: Term
+        :param class_value: Class Value
+        :return: Conditional probability
+        """
         class_df = self.conditional_probabilities[class_value]
-        return float(class_df[class_df.terms == word].loc[:, "bernoulli_probability"])
+        return float(class_df[class_df.terms == word].loc[:,
+                     "bernoulli_probability"])
 
     def fit(self):
+        """
+        Train the model on training data set
+        :return: None
+        """
         for class_value in self.class_values:
             self.build_bernoulli_index(class_value)
             self.calculate_probabilities(class_value)
 
     def build_bernoulli_index(self, class_value):
+        """
+        Parse through documents in specified class value and determine
+        number of documents containing each term.
+        :param class_value: Class Value
+        :return: None
+        """
         class_docs = list(self.raw_data[self.raw_data["class"] == class_value]
                           .copy()["document_contents"])
         inverted_index = InvertedIndex(auto_load=False)
@@ -535,16 +634,27 @@ class NaiveBayesClassifier(DocumentProcessing):
         self.bernoulli_index[class_value] = inverted_index
 
     def parse_vocabulary(self):
+        """
+        Calculate total number of words in the entire data set.
+        :return: None
+        """
         for class_value_ in self.class_values:
-            class_docs = list(self.raw_data[self.raw_data["class"] == class_value_].copy()[
+            class_docs = list(self.raw_data[self.raw_data["class"] ==
+                                            class_value_].copy()[
                               "document_contents"])
             for class_doc in class_docs:
                 tokens = self.pre_process(class_doc, remove_stopwords=True,
                                           stemming=True)
-                for token in tokens:
-                    self.total_vocab_count += 1
+                self.total_vocab_count += len(tokens)
 
     def calculate_probabilities(self, class_value):
+        """
+        Calculate conditional probabilities based on term frequency for
+        multinomial naive bayes model and number of documents containing
+        each term for bernoulli naive bayes model.
+        :param class_value: Class Value
+        :return: None
+        """
         terms = list()
         voc_count = 0
         num_instances = list()
@@ -579,26 +689,40 @@ class NaiveBayesClassifier(DocumentProcessing):
                                       columns=["terms",
                                                "number_of_instances",
                                                "number_of_docs"])
-        conditional_df["number_of_instances"] = conditional_df.number_of_instances.astype(
-            int)
-        conditional_df["number_of_docs"] = conditional_df.number_of_docs.astype(
-            int)
+        conditional_df["number_of_instances"] = \
+            conditional_df.number_of_instances.astype(int)
+        conditional_df["number_of_docs"] = \
+            conditional_df.number_of_docs.astype(int)
         conditional_df["conditional_probability"] = (
-            conditional_df["number_of_instances"] + 1)/(voc_count + self.total_vocab_count * 1.0)
-        conditional_df["bernoulli_probability"] = (
-            conditional_df["number_of_docs"] + 1 * 1.0)/(N_c + 2)
+            conditional_df["number_of_instances"] + 1)/(voc_count +
+                                                        self.total_vocab_count * 1.0)
+        conditional_df["bernoulli_probability"] = (conditional_df[
+                                                       "number_of_docs"] + 1
+                                                   * 1.0)/(N_c + 2)
         self.conditional_probabilities[class_value] = conditional_df
 
     def calculate_metrics(self, predictions, testing_labels):
+        """
+        Calculate Performance metrics such as precision, recall, accuracy,
+         and F1 score.
+        :param predictions: Predictions made by the model
+        :param testing_labels: Actual labels
+        :return: Precision, Recall, F_score, Accuracy
+        """
         precision = precision_score(
             testing_labels, predictions, average="weighted")
         recall = recall_score(testing_labels, predictions, average="weighted")
         f_score = f1_score(testing_labels, predictions, average="weighted")
-        confusion_mat = confusion_matrix(testing_labels, predictions)
         accuracy = accuracy_score(testing_labels, predictions)
         return precision, recall, f_score, accuracy
 
     def predict_single(self, pred_doc, mode):
+        """
+        Predict class value for a single document
+        :param pred_doc: Document text
+        :param mode: Use bernoulli or multinomial model
+        :return: Predicted class value
+        """
         tokens = self.pre_process(
             pred_doc, remove_stopwords=True, stemming=True)
         argmax = dict()
@@ -631,6 +755,13 @@ class NaiveBayesClassifier(DocumentProcessing):
             return max(argmax, key=argmax.get)
 
     def predict_multiple(self, testing_df, mode):
+        """
+        Predict class values for a number of input documents
+        :param testing_df: Pandas Dataframe containing document text and
+        class values
+        :param mode: Bernoulli or Multinomial mode
+        :return: Predicted class values for all input documents.
+        """
         predictions = []
         if mode == "m":  # multinomial
             for document_content in testing_df["document_contents"].values:
@@ -646,7 +777,8 @@ class NaiveBayesClassifier(DocumentProcessing):
                             output += np.log(instance)
                         else:
                             output += np.log(1 /
-                                             (self.class_vocab_count[class_value] + 1))
+                                             (self.class_vocab_count[
+                                                  class_value] + 1))
                     maxima[class_value] = output
                 predictions.append(max(maxima, key=maxima.get))
             predictions_df = pd.DataFrame(
