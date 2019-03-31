@@ -536,7 +536,7 @@ if __name__ == "__main__":
     inv_index = InvertedIndex("documents", "vsm")
     engine = SearchEngine(inv_index)
     pickle.dump(engine, open("VSM_Search_Engine.p", "wb"))
-    pickle.dump(inv_index.classifier_df, open("Data.p", "wb"90))
+    pickle.dump(inv_index.classifier_df, open("Data.p", "wb"))
     # inv_index = InvertedIndex()
     # classifer_df = ClassifierDataFrame()
     # load_data("documents", inv_index, classifer_df)
