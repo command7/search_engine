@@ -30,7 +30,7 @@ class Document():
         self.positions.append(position)
 
     def increment_frequency(self):
-        self.tw += 1
+        self.term_weight += 1
 
 
 """ Parent class for InvertedIndex and SearchEngine. 
@@ -74,7 +74,7 @@ class InvertedIndex(DocumentProcessing):
             self.docLengths = dict()
         else:
             self.load_data(document_directory)
-        self.classifier_df.split_training_testing_set(t_size=0.2)
+        # self.classifier_df.split_training_testing_set(t_size=0.2)
 
     def load_data(self, directory, ignore_stopwords = True):
         current_directory = os.getcwd()
@@ -529,7 +529,10 @@ def load_data(directory, inv_index, classifier_df):
                     inv_index.parse_document(doc_location)
 
 
-# if __name__ == "__main__":
+if __name__ == "__main__":
+    inv_index = InvertedIndex("test", "bs")
+    vsm_index = InvertedIndex("test", "vsm")
+    print(inv_index)
     # inv_index = InvertedIndex()
     # classifer_df = ClassifierDataFrame()
     # load_data("documents", inv_index, classifer_df)
