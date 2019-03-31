@@ -437,6 +437,7 @@ class NaiveBayesClassifier(DocumentProcessing):
         terms = list()
         voc_count = 0
         num_instances = list()
+        bernoulli_inv_index = self.bernoulli_index[class_value]
         num_docs = list()
         class_docs = list(self.raw_data[self.raw_data["class"] == class_value].copy()["document_contents"])
         N_c = len(class_docs)
@@ -449,17 +450,21 @@ class NaiveBayesClassifier(DocumentProcessing):
                 if token not in terms:
                     terms.append(token)
                     num_instances.append(0)
+                    num_docs.append(0)
         for class_doc_ in class_docs:
             tokens_ = self.pre_process(class_doc_, remove_stopwords=True, stemming=True)
             for token_ in tokens_:
                 term_index = terms.index(token_)
+                num_docs[term_index] += len(bernoulli_inv_index.get_postings_list(token_))
                 num_instances[term_index] += 1
         self.class_vocab_count[class_value] = voc_count
-        conditional_probs = np.array([terms, num_instances])
+        conditional_probs = np.array([terms, num_instances, num_docs])
         conditional_probs = conditional_probs.T
-        conditional_df = pd.DataFrame(conditional_probs, columns=["terms", "number_of_instances"])
+        conditional_df = pd.DataFrame(conditional_probs, columns=["terms", "number_of_instances", "number_of_docs"])
         conditional_df["number_of_instances"] = conditional_df.number_of_instances.astype(int)
-        conditional_df["conditional_probability"] = (conditional_df["number_of_instances"] + 1)/(voc_count + self.total_vocab_count)
+        conditional_df["number_of_docs"] = conditional_df.number_of_docs.astype(int)
+        conditional_df["conditional_probability"] = (conditional_df["number_of_instances"] + 1)/(voc_count + self.total_vocab_count * 1.0)
+        conditional_df["bernoulli_probability"] = (conditional_df["number_of_docs"] + 1)/(N_c + 2)
         self.conditional_probabilities[class_value] = conditional_df
 
     def calculate_metrics(self, predictions, testing_labels):
