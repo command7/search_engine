@@ -822,81 +822,57 @@ class NaiveBayesClassifier(DocumentProcessing):
             return predictions_df
 
 
-
-# create test files
-# if __name__ == "__main__":
-#     cl_df = pickle.load(open("pickled_objects/Data.p", "rb"))
-#     test_set = cl_df.X_test
-#     labels = cl_df.y_test
-#     merged = pd.concat([test_set, labels], axis=1)
-#     for class_value in ["business", "sport", "politics",
-#                              "entertainment", "tech"]:
-#         class_docs = merged[merged["class"] == class_value].reset_index(
-#             drop=True)
-#         dest = "test_documents/" + class_value + "/"
-#         for i in range(5):
-#             rand_index = np.random.randint(0, len(class_docs))
-#             document_ = class_docs.loc[rand_index, "document_contents"]
-#             dest_file_name = dest + class_value + "_" + str(i) + ".txt"
-#             if not os.path.exists(os.path.dirname(dest_file_name)):
-#                 os.makedirs(os.path.dirname(dest_file_name))
-#             with open (dest_file_name, "w+") as \
-#                     handle:
-#                 handle.write(document_)
-
-
-
-# if __name__ == "__main__":
-#     total_args = len(sys.argv)
-#     if sys.argv[1] == "--nb":
-#         nb_model = pickle.load(open("pickled_objects/Naive_Bayes.p", "rb"))
-#         document_name = sys.argv[2]
-#         doc_text = open(document_name, "r").read()
-#         prediction = nb_model.predict_single(doc_text, mode="m")
-#         print("Prediction: {}".format(prediction))
-#     elif sys.argv[1] == "--bs":
-#         search_engine = pickle.load(
-#             open("pickled_objects/Boolean_Search_Engine.p", "rb"))
-#         query = " ".join(sys.argv[2:])
-#         results = search_engine.boolean_and_query(query)
-#         with open("query_result.txt", "w+") as handle:
-#             for result in results:
-#                 handle.write("Document Number: {}\n".format(result.id))
-#                 print("Document Number: {}".format(result.id))
-#                 handle.write(search_engine.documents[result.id] + "\n\n")
-#                 print(search_engine.documents[result.id][:100] + "\n\n")
-#             handle.write("Documents IDs : \n {}".format([doc.id for doc in results]))
-#             print("Documents IDs : \n {} \n".format([doc.id for doc in results]))
-#             print("Total Number of Documents found: {}\n".format(len(results)))
-#             handle.write("Total Number of Documents found: {}\n".format
-#                          (len(results)))
-#     elif sys.argv[1] == "--ps":
-#         search_engine = pickle.load(
-#             open("pickled_objects/Boolean_Search_Engine.p", "rb"))
-#         query = " ".join(sys.argv[2:])
-#         results = search_engine.positional_search(query)
-#         with open("query_result.txt", "w+") as handle:
-#             for result in results:
-#                 handle.write("Document Number: {}\n".format(result.id))
-#                 print("Document Number: {}".format(result.id))
-#                 handle.write(search_engine.documents[result.id] + "\n\n")
-#                 print(search_engine.documents[result.id][:100] + "\n\n")
-#             handle.write("Documents IDs : \n {}".format([doc.id for doc in results]))
-#             print("Documents IDs : \n {} \n".format
-#                   ([doc.id for doc in results]))
-#             print("Total Number of Documents found: {}\n".format(len(results)))
-#             handle.write("Total Number of Documents found: {}\n".format
-#                          (len(results)))
-#     elif sys.argv[1] == "--vsm":
-#         search_engine = pickle.load(
-#             open("pickled_objects/VSM_Search_Engine.p", "rb"))
-#         query = " ".join(sys.argv[2:])
-#         results = search_engine.ranked_search(query)
-#         with open("query_result.txt", "w+") as handle:
-#             for result in results:
-#                 handle.write("Document Number: {}\n".format(result))
-#                 print("Document Number: {}".format(result))
-#                 handle.write(search_engine.documents[result] + "\n\n")
-#                 print(search_engine.documents[result][:100] + "\n\n")
-#             handle.write("Documents IDs : \n {}".format(results))
-#             print("Documents IDs : \n {}".format(results))
+if __name__ == "__main__":
+    total_args = len(sys.argv)
+    if sys.argv[1] == "--nb":
+        nb_model = pickle.load(open("pickled_objects/Naive_Bayes.p", "rb"))
+        document_name = sys.argv[2]
+        doc_text = open(document_name, "r").read()
+        prediction = nb_model.predict_single(doc_text, mode="m")
+        print("Prediction: {}".format(prediction))
+    elif sys.argv[1] == "--bs":
+        search_engine = pickle.load(
+            open("pickled_objects/Boolean_Search_Engine.p", "rb"))
+        query = " ".join(sys.argv[2:])
+        results = search_engine.boolean_and_query(query)
+        with open("query_result.txt", "w+") as handle:
+            for result in results:
+                handle.write("Document Number: {}\n".format(result.id))
+                print("Document Number: {}".format(result.id))
+                handle.write(search_engine.documents[result.id] + "\n\n")
+                print(search_engine.documents[result.id][:100] + "\n\n")
+            handle.write("Documents IDs : \n {}".format([doc.id for doc in results]))
+            print("Documents IDs : \n {} \n".format([doc.id for doc in results]))
+            print("Total Number of Documents found: {}\n".format(len(results)))
+            handle.write("Total Number of Documents found: {}\n".format
+                         (len(results)))
+    elif sys.argv[1] == "--ps":
+        search_engine = pickle.load(
+            open("pickled_objects/Boolean_Search_Engine.p", "rb"))
+        query = " ".join(sys.argv[2:])
+        results = search_engine.positional_search(query)
+        with open("query_result.txt", "w+") as handle:
+            for result in results:
+                handle.write("Document Number: {}\n".format(result.id))
+                print("Document Number: {}".format(result.id))
+                handle.write(search_engine.documents[result.id] + "\n\n")
+                print(search_engine.documents[result.id][:100] + "\n\n")
+            handle.write("Documents IDs : \n {}".format([doc.id for doc in results]))
+            print("Documents IDs : \n {} \n".format
+                  ([doc.id for doc in results]))
+            print("Total Number of Documents found: {}\n".format(len(results)))
+            handle.write("Total Number of Documents found: {}\n".format
+                         (len(results)))
+    elif sys.argv[1] == "--vsm":
+        search_engine = pickle.load(
+            open("pickled_objects/VSM_Search_Engine.p", "rb"))
+        query = " ".join(sys.argv[2:])
+        results = search_engine.ranked_search(query)
+        with open("query_result.txt", "w+") as handle:
+            for result in results:
+                handle.write("Document Number: {}\n".format(result))
+                print("Document Number: {}".format(result))
+                handle.write(search_engine.documents[result] + "\n\n")
+                print(search_engine.documents[result][:100] + "\n\n")
+            handle.write("Documents IDs : \n {}".format(results))
+            print("Documents IDs : \n {}".format(results))
