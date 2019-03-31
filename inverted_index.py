@@ -533,7 +533,10 @@ def load_data(directory, inv_index, classifier_df):
 
 
 if __name__ == "__main__":
-
+    data = pickle.load(open("Data.p", "rb"))
+    nb = NaiveBayesClassifier(data)
+    nb.fit()
+    pickle.dump(nb, open("Naive_Bayes.p", "wb"))
     # inv_index = InvertedIndex()
     # classifer_df = ClassifierDataFrame()
     # load_data("documents", inv_index, classifer_df)
