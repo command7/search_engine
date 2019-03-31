@@ -65,6 +65,9 @@ Where document_path = Location of document to classify
 
 ### Test Queries to check functionality
 
+A set of test queries that can be used to check the functionality of the 
+system are given below.
+
 AND Queries
 * Jackie Ballard Parliament
 * Research and Development
@@ -78,7 +81,11 @@ Free text Queries
 * Cyber computers government
 * Actress actor theatre
 
+
 Test Classification Documents
+
+A set of test documents are available in __testing_documents__ folder that 
+can be used to test the functionality of the naive bayes classifier.
 
 * politics_1.txt
 * sport_1.txt
