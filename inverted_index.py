@@ -68,10 +68,10 @@ class InvertedIndex(DocumentProcessing):
         self.posting_lists = list()
         self.purpose = purpose
         self.classifier_df = ClassifierDataFrame()
+        self.docLengths = dict()
         if self.purpose == "vsm":
             self.load_data(document_directory, False)
             self.calculate_tfidf()
-            self.docLengths = dict()
         else:
             self.load_data(document_directory)
         # self.classifier_df.split_training_testing_set(t_size=0.2)
@@ -181,8 +181,8 @@ class InvertedIndex(DocumentProcessing):
 """Deals with search queries."""
 
 class SearchEngine(DocumentProcessing):
-    def __init__(self, inverted_index, purpose="bs"):
-        self.purpose = purpose
+    def __init__(self, inverted_index):
+        self.purpose = inverted_index.purpose
         self.terms = inverted_index.terms
         self.documents = inverted_index.documents
         self.posting_lists = inverted_index.posting_lists
@@ -532,7 +532,8 @@ def load_data(directory, inv_index, classifier_df):
 if __name__ == "__main__":
     inv_index = InvertedIndex("test", "bs")
     vsm_index = InvertedIndex("test", "vsm")
-    print(inv_index)
+    boolean_engine = SearchEngine(inv_index, "bs")
+    s
     # inv_index = InvertedIndex()
     # classifer_df = ClassifierDataFrame()
     # load_data("documents", inv_index, classifer_df)
