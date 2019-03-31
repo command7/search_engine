@@ -856,12 +856,13 @@ if __name__ == "__main__":
     elif sys.argv[1] == "--bs":
         search_engine = pickle.load(
             open("pickled_objects/Boolean_Search_Engine.p", "rb"))
-        query = " ".join(sys.argv[3:])
-        mode = sys.argv[2]
-        if mode == "-AND":
-            results = search_engine.boolean_and_query(query)
-        elif mode == "-freequery":
-            results = search_engine.positional_search(query)
+        query = " ".join(sys.argv[2:])
+        results = search_engine.boolean_and_query(query)
+    elif sys.argv[1] == "--ps":
+        search_engine = pickle.load(
+            open("pickled_objects/Boolean_Search_Engine.p", "rb"))
+        query = " ".join(sys.argv[2:])
+        results = search_engine.positional_search(query)
     elif sys.argv[1] == "--vsm":
         search_engine = pickle.load(
             open("pickled_objects/VSM_Search_Engine.p", "rb"))
