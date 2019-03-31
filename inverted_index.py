@@ -413,6 +413,10 @@ class NaiveBayesClassifier(DocumentProcessing):
         class_df = self.conditional_probabilities[class_value]
         return float(class_df[class_df.terms == word].loc[:, "conditional_probability"])
 
+    def get_bernoulli_condition_probability(self, word, class_value):
+        lass_df = self.conditional_probabilities[class_value]
+        return float(class_df[class_df.terms == word].loc[:, "bernoulli_probability"])
+
     def fit(self):
         for class_value in self.class_values:
             self.build_bernoulli_index(class_value)
@@ -464,7 +468,7 @@ class NaiveBayesClassifier(DocumentProcessing):
         conditional_df["number_of_instances"] = conditional_df.number_of_instances.astype(int)
         conditional_df["number_of_docs"] = conditional_df.number_of_docs.astype(int)
         conditional_df["conditional_probability"] = (conditional_df["number_of_instances"] + 1)/(voc_count + self.total_vocab_count * 1.0)
-        conditional_df["bernoulli_probability"] = (conditional_df["number_of_docs"] + 1)/(N_c + 2)
+        conditional_df["bernoulli_probability"] = (conditional_df["number_of_docs"] + 1 * 1.0)/(N_c + 2)
         self.conditional_probabilities[class_value] = conditional_df
 
     def calculate_metrics(self, predictions, testing_labels):
