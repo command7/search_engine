@@ -18,11 +18,11 @@ The Naive Bayes classifier classifies documents into 5 class values namely
 * Technology
 * Sports
 
-## Disclaimer
+## Output of Search Engines
 
 On using the search engine, only the first 100 characters of each found 
 document will be printed in the command line. The entire output will be 
-written to a text file called **query_results.txt**.
+written to a text file called `query_results.txt`.
 
 ## Dependencies Required
 
@@ -68,24 +68,27 @@ Where document_path = Location of document to classify
 A set of test queries that can be used to check the functionality of the 
 system are given below.
 
-AND Queries
+**AND Queries**
 * Jackie Ballard Parliament
 * Research and Development
 
-Positional Queries
+**Positional Queries**
 
 * Idowu made his breakthrough
 * Third generation mobile
 
-Free text Queries
+**Free text Queries**
+
 * Cyber computers government
 * Actress actor theatre
 
 
-Test Classification Documents
+**Test Classification Documents**
 
-A set of test documents are available in __testing_documents__ folder that 
-can be used to test the functionality of the naive bayes classifier.
+A set of test documents are available in `testing_documents` folder that 
+can be used to test the functionality of the naive bayes classifier. These 
+documents were not used to train the model and are from the testing set of 
+documents.
 
 * politics_1.txt
 * sport_1.txt
