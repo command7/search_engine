@@ -8,7 +8,7 @@ from nltk.stem import PorterStemmer
 import operator
 import pandas as pd
 import pickle
-from sklearn.metrics import f1_score, precision_score, recall_score, confusion_matrix
+from sklearn.metrics import f1_score, precision_score, recall_score, confusion_matrix, accuracy_score
 from sklearn.model_selection import StratifiedShuffleSplit
 import sys
 
@@ -443,7 +443,8 @@ class NaiveBayesClassifier(DocumentProcessing):
         recall = recall_score(testing_labels, predictions, average="weighted")
         f_score = f1_score(testing_labels, predictions, average="weighted")
         confusion_mat = confusion_matrix(testing_labels, predictions)
-        return precision, recall, f_score, confusion_mat
+        accuracy = accuracy_score(testing_labels, predictions)
+        return precision, recall, f_score, accuracy
 
     def predict_single(self, pred_doc, mode):
         tokens = self.pre_process(pred_doc, remove_stopwords=True, stemming=True)
@@ -474,7 +475,7 @@ class NaiveBayesClassifier(DocumentProcessing):
 
     def predict_multiple(self, testing_df, mode):
         predictions = []
-        if mode == "b": #bernoulli
+        if mode == "m": #bernoulli
             for document_content in testing_df["document_contents"].values:
                 tokens = self.pre_process(str(document_content))
                 maxima = dict()
@@ -513,12 +514,6 @@ class NaiveBayesClassifier(DocumentProcessing):
         # predictions_df.to_csv("test_predictions.csv")
 
 
-class VectorSpaceModel():
-    def __init__(self):
-        pass
-
-
-
 def load_data(directory, inv_index, classifier_df):
     current_directory = os.getcwd()
     doc_directory = os.path.join(current_directory, directory)
@@ -533,27 +528,26 @@ def load_data(directory, inv_index, classifier_df):
 
 
 if __name__ == "__main__":
-    data = pickle.load(open("Data.p", "rb"))
-    nb = NaiveBayesClassifier(data)
-    nb.fit()
-    pickle.dump(nb, open("Naive_Bayes.p", "wb"))
-    # inv_index = InvertedIndex()
-    # classifer_df = ClassifierDataFrame()
-    # load_data("documents", inv_index, classifer_df)
-    # pickle.dump(inv_index, open("Inverted_Index.p", "wb+"))
-    # pickle.dump(classifer_df, open("raw_data_df.p", "wb+"))
+    nbm_pred = pd.read_csv("multinomial_predictions.csv")
+    nbb_pred = pd.read_csv("bernoulli_predictions.csv")
+    nb = pickle.load(open("Naive_Bayes.p", "rb"))
+    raw_data = pickle.load(open("Data.p", "rb"))
+    early_test = pd.read_csv("t")
+    test_labels = raw_data.y_test
 
-    # inv_index = pickle.load(open("Inverted_Index.p", "rb"))
-    # cl_df = pickle.load(open("raw_data_df.p", "rb"))
-    # nb = pickle.load(open("Naive_Bayes.p", "rb"))
-    # predictions_multinomial = nb.predict_multiple(cl_df.X_test, "m")
-    # predictions_bernoulli = nb.predict_multiple(cl_df.X_test, "b")
-    # predictions_multinomial.to_csv("multinomial_predictions.csv")
-    # predictions_bernoulli.to_csv("bernoulli_predictions.csv")
 
-    # predictions = nb.predict_multiple(cl_df.X_test)
-    # print(predictions)
-    # #
+    nbm_pred_ = nbm_pred.class_predictions.map({"politics":0, "entertainment":1,"sport":2,"business":3, "tech" :4}).values
+    nbb_pred_ = nbb_pred.class_predictions.map(
+        {"politics": 0, "entertainment": 1, "sport": 2, "business": 3, "tech": 4}).values
+    test_labels_ = test_labels["class"].map(
+        {"politics": 0, "entertainment": 1, "sport": 2, "business": 3, "tech": 4}).values
+    m_precision, m_recall, m_f_score, m_accuracy = nb.calculate_metrics(nbm_pred_, test_labels_)
+    b_precision, b_recall, b_f_score, b_accuracy = nb.calculate_metrics(nbb_pred_, test_labels_)
+    print("Multinomial Model")
+    print("Accuracy: {}".format(m_accuracy))
+    print("Bernoulli Model")
+    print("Accuracy: {}".format(b_accuracy))
+
 
 
     # df = pickle.load(open("raw_data_df.p", "rb"))
