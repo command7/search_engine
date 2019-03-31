@@ -767,6 +767,7 @@ class NaiveBayesClassifier(DocumentProcessing):
                         output += np.log(
                             1/(self.class_vocab_count[class_value] +
                                self.total_vocab_count))
+                argmax[class_value] = output
             return max(argmax, key=argmax.get)
 
     def predict_multiple(self, testing_df, mode):
@@ -853,7 +854,7 @@ if __name__ == "__main__":
         document_name = sys.argv[2]
         doc_text = open(document_name, "r").read()
         prediction = nb_model.predict_single(doc_text, mode="m")
-        print("The document is predicted to belong to {} category".format(prediction))
+        print("Prediction: {}".format(prediction))
     elif sys.argv[1] == "--bs":
         search_engine = pickle.load(
             open("pickled_objects/Boolean_Search_Engine.p", "rb"))
