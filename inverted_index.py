@@ -576,13 +576,13 @@ class NaiveBayesClassifier(DocumentProcessing):
 if __name__ == "__main__":
     total_args = len(sys.argv)
     if sys.argv[1] == "--nb":
-        nb_model = pickle.load(open("Naive_Bayes.p", "rb"))
+        nb_model = pickle.load(open("pickled_objects/Naive_Bayes.p", "rb"))
         document_name = sys.argv[2]
         doc_text = open(document_name, "r").read()
         prediction = nb_model.predict_single(doc_text, mode="m")
         print("The document is predicted to belong to {} category".format(prediction))
     elif sys.argv[1] == "--bs":
-        search_engine = pickle.load(open("Boolean_Search_Engine.p", "rb"))
+        search_engine = pickle.load(open("pickled_objects/Boolean_Search_Engine.p", "rb"))
         query = " ".join(sys.argv[3:])
         mode = sys.argv[2]
         if mode == "-AND":
@@ -590,7 +590,7 @@ if __name__ == "__main__":
         elif mode == "-freequery":
             results = search_engine.positional_search(query)
     elif sys.argv[1] == "--vsm":
-        search_engine = pickle.load(open("VSM_Search_Engine.p", "rb"))
+        search_engine = pickle.load(open("pickled_objects/VSM_Search_Engine.p", "rb"))
         query = " ".join(sys.argv[2:])
         results = search_engine.ranked_search(query)
 
