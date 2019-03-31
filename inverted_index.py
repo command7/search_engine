@@ -859,27 +859,44 @@ if __name__ == "__main__":
             open("pickled_objects/Boolean_Search_Engine.p", "rb"))
         query = " ".join(sys.argv[2:])
         results = search_engine.boolean_and_query(query)
-        print("Total Number of Documents found: {}".format(len(results)))
-        for result in results:
-            print("Document Number: {}".format(result.id))
-            print(search_engine.documents[result.id][:100] + "\n\n")
-        print("Documents IDs : \n {}".format([doc.id for doc in results]))
+        with open("query_result.txt", "w+") as handle:
+            for result in results:
+                handle.write("Document Number: {}\n".format(result.id))
+                print("Document Number: {}".format(result.id))
+                handle.write(search_engine.documents[result.id] + "\n\n")
+                print(search_engine.documents[result.id][:100] + "\n\n")
+            handle.write("Documents IDs : \n {}".format([doc.id for doc in results]))
+            print("Documents IDs : \n {} \n".format([doc.id for doc in results]))
+            print("Total Number of Documents found: {}\n".format(len(results)))
+            handle.write("Total Number of Documents found: {}\n".format
+                         (len(results)))
     elif sys.argv[1] == "--ps":
         search_engine = pickle.load(
             open("pickled_objects/Boolean_Search_Engine.p", "rb"))
         query = " ".join(sys.argv[2:])
         results = search_engine.positional_search(query)
-        print("Total Number of Documents found: {}".format(len(results)))
-        for result in results:
-            print("Document Number: {}".format(result.id))
-            print(search_engine.documents[result.id][:100] + "\n\n")
-        print("Documents IDs : \n {}".format([doc.id for doc in results]))
+        with open("query_result.txt", "w+") as handle:
+            for result in results:
+                handle.write("Document Number: {}\n".format(result.id))
+                print("Document Number: {}".format(result.id))
+                handle.write(search_engine.documents[result.id] + "\n\n")
+                print(search_engine.documents[result.id][:100] + "\n\n")
+            handle.write("Documents IDs : \n {}".format([doc.id for doc in results]))
+            print("Documents IDs : \n {} \n".format
+                  ([doc.id for doc in results]))
+            print("Total Number of Documents found: {}\n".format(len(results)))
+            handle.write("Total Number of Documents found: {}\n".format
+                         (len(results)))
     elif sys.argv[1] == "--vsm":
         search_engine = pickle.load(
             open("pickled_objects/VSM_Search_Engine.p", "rb"))
         query = " ".join(sys.argv[2:])
         results = search_engine.ranked_search(query)
-        for result in results:
-            print("Document Number: {}".format(result))
-            print(search_engine.documents[result] + "\n\n")
-        print("Documents IDs : \n {}".format(results))
+        with open("query_result.txt", "w+") as handle:
+            for result in results:
+                handle.write("Document Number: {}\n".format(result))
+                print("Document Number: {}".format(result))
+                handle.write(search_engine.documents[result] + "\n\n")
+                print(search_engine.documents[result][:100] + "\n\n")
+            handle.write("Documents IDs : \n {}".format(results))
+            print("Documents IDs : \n {}".format(results))
