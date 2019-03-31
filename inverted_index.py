@@ -62,25 +62,27 @@ class DocumentProcessing():
 """ Storage class for parsing documents and constructing inverted index. """
 class InvertedIndex(DocumentProcessing):
     num_documents = 0
-    def __init__(self, document_loc, purpose="bs", is_dir=True):
+    def __init__(self, document_loc=None, purpose="bs", is_dir=True, auto_load=True):
         self.documents = list()
         self.terms = list()
         self.posting_lists = list()
         self.purpose = purpose
+        self.auto_load = auto_load
         self.classifier_df = ClassifierDataFrame()
         self.docLengths = dict()
-        if self.purpose == "vsm":
-            if is_dir:
-                self.load_data(document_loc, ignore_stopwords=False)
+        if self.auto_load:
+            if self.purpose == "vsm":
+                if is_dir:
+                    self.load_data(document_loc, ignore_stopwords=False)
+                else:
+                    self.load_data(document_loc, ignore_stopwords=False, is_text = True)
+                self.calculate_tfidf()
             else:
-                self.load_data(document_loc, ignore_stopwords=False, is_text = True)
-            self.calculate_tfidf()
-        else:
-            if is_dir:
-                self.load_data(document_loc)
-            else:
-                self.load_data(is_text=True)
-        self.classifier_df.split_training_testing_set(t_size=0.2)
+                if is_dir:
+                    self.load_data(document_loc)
+                else:
+                    self.load_data(is_text=True)
+            self.classifier_df.split_training_testing_set(t_size=0.2)
 
     def load_data(self, directory, ignore_stopwords = True, is_text = False):
         if is_text:
@@ -418,8 +420,9 @@ class NaiveBayesClassifier(DocumentProcessing):
 
     def build_bernoulli_index(self, class_value):
         class_docs = list(self.raw_data[self.raw_data["class"] == class_value].copy()["document_contents"])
+        inverted_index = InvertedIndex(auto_load=False)
         for class_doc in class_docs:
-            tokens = self.pre_process(class_doc, remove_stopwords=True, stemming=True)
+
 
 
     def parse_vocabulary(self):
