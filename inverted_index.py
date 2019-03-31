@@ -74,7 +74,7 @@ class InvertedIndex(DocumentProcessing):
             self.calculate_tfidf()
         else:
             self.load_data(document_directory)
-        # self.classifier_df.split_training_testing_set(t_size=0.2)
+        self.classifier_df.split_training_testing_set(t_size=0.2)
 
     def load_data(self, directory, ignore_stopwords = True):
         current_directory = os.getcwd()
@@ -285,11 +285,12 @@ class SearchEngine(DocumentProcessing):
                         else:
                             vsm_scores[document_.id] = score
             ranked_results = sorted(vsm_scores.items(), key=operator.itemgetter(1))
-            result_docs = [ranked_results[rank][0] for rank in range(0, 10)]
+            print(vsm_scores)
+            if len(ranked_results) > 10:
+                result_docs = [ranked_results[rank][0] for rank in range(0, 10)]
+            else:
+                result_docs = [ranked_results[rank][0] for rank in range(0, len(ranked_results))]
             return result_docs
-
-
-
 
     # Prints out search results
     def print_search_results(self, result_docs):
@@ -530,10 +531,9 @@ def load_data(directory, inv_index, classifier_df):
 
 
 if __name__ == "__main__":
-    inv_index = InvertedIndex("test", "bs")
-    vsm_index = InvertedIndex("test", "vsm")
-    boolean_engine = SearchEngine(inv_index, "bs")
-    s
+    inv_index = InvertedIndex("documents", "bs")
+    engine = SearchEngine(inv_index)
+    pickle.dump(engine, open("Boolean_Search_Engine.p", "wb"))
     # inv_index = InvertedIndex()
     # classifer_df = ClassifierDataFrame()
     # load_data("documents", inv_index, classifer_df)
