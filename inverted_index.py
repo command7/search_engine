@@ -549,44 +549,51 @@ class NaiveBayesClassifier(DocumentProcessing):
 
 
 if __name__ == "__main__":
-    inv_index = InvertedIndex("test")
+    inv_index = InvertedIndex("documents")
     cl_df = inv_index.classifier_df
     nb = NaiveBayesClassifier(cl_df)
-    print(inv_index.classifier_df.df.shape)
-    print(nb.raw_data[nb.raw_data["class"] == "business"])
     nb.fit()
-    print(nb.bernoulli_index["business"])
     b_preds = nb.predict_multiple(cl_df.X_test, mode="b")
+    b_preds.to_csv("bernoulli_predictions.csv")
     m_preds = nb.predict_multiple(cl_df.X_test, mode="m")
+    m_preds.to_csv("multinomial_predictions")
     test_labels = cl_df.y_test
 
-    for i in range(len(b_preds)):
-        print("{} --- {}".format(b_preds.loc[i, "class_predictions"], test_labels.loc[i, "class"]))
+
+    nbm_pred_ = m_preds.class_predictions.map({"politics":0, "entertainment":1,"sport":2,"business":3, "tech" :4}).values
+    nbb_pred_ = b_preds.class_predictions.map(
+        {"politics": 0, "entertainment": 1, "sport": 2, "business": 3, "tech": 4}).values
+    test_labels_ = test_labels["class"].map(
+        {"politics": 0, "entertainment": 1, "sport": 2, "business": 3, "tech": 4}).values
+    m_precision, m_recall, m_f_score, m_accuracy = nb.calculate_metrics(nbm_pred_, test_labels_)
+    b_precision, b_recall, b_f_score, b_accuracy = nb.calculate_metrics(nbb_pred_, test_labels_)
+    print("Multinomial Model")
+    print("Accuracy: {}".format(m_accuracy))
+    print("Bernoulli Model")
+    print("Accuracy: {}".format(b_accuracy))
 
 
-    # nbm_pred_ = nbm_pred.class_predictions.map({"politics":0, "entertainment":1,"sport":2,"business":3, "tech" :4}).values
-    # nbb_pred_ = nbb_pred.class_predictions.map(
-    #     {"politics": 0, "entertainment": 1, "sport": 2, "business": 3, "tech": 4}).values
-    # test_labels_ = test_labels["class"].map(
-    #     {"politics": 0, "entertainment": 1, "sport": 2, "business": 3, "tech": 4}).values
-    # m_precision, m_recall, m_f_score, m_accuracy = nb.calculate_metrics(nbm_pred_, test_labels_)
-    # b_precision, b_recall, b_f_score, b_accuracy = nb.calculate_metrics(nbb_pred_, test_labels_)
-    # print("Multinomial Model")
-    # print("Accuracy: {}".format(m_accuracy))
-    # print("Bernoulli Model")
-    # print("Accuracy: {}".format(b_accuracy))
+if __name__ == "__main__":
+    total_args = len(sys.argv)
+    if sys.argv[1] == "--nb":
+        nb_model = pickle.load(open("Naive_Bayes.p", "rb"))
+        document_name = sys.argv[2]
+        doc_text = open(document_name, "r").read()
+        prediction = nb_model.predict_single(doc_text, mode="m")
+        print("The document is predicted to belong to {} category".format(prediction))
+    elif sys.argv[1] == "--bs":
+        search_engine = pickle.load(open("Boolean_Search_Engine.p", "rb"))
+        query = " ".join(sys.argv[3:])
+        mode = sys.argv[2]
+        if mode == "-AND":
+            results = search_engine.boolean_and_query(query)
+        elif mode == "-freequery":
+            results = search_engine.positional_search(query)
+    elif sys.argv[1] == "--vsm":
+        search_engine = pickle.load(open("VSM_Search_Engine.p", "rb"))
+        query = " ".join(sys.argv[2:])
+        results = search_engine.ranked_search(query)
 
-
-
-    # df = pickle.load(open("raw_data_df.p", "rb"))
-    # nb = pickle.load(open("Naive_Bayes.p", "rb"))
-    # predictions = pd.read_csv("test_predictions.csv")
-    # encoded_test = df.y_test["class"].map({"politics":0, "entertainment":1,"sport":2,"business":3, "tech" :4}).values
-    # encoded_pred = predictions["class_predictions"].map({"politics":0, "entertainment":1,"sport":2,"business":3, "tech" :4}).values
-    # precision, recall, fscore, conf_mat = nb.calculate_metrics(encoded_pred, encoded_test)
-    # print("Precision : {}".format(precision))
-    # print("Recall : {}".format(recall))
-    # print("F1 Score : {}".format(fscore))
 
     # if sys.argv[1] == "--nb":
     #     mode = sys.argv[2]
