@@ -459,7 +459,8 @@ class NaiveBayesClassifier(DocumentProcessing):
             tokens_ = self.pre_process(class_doc_, remove_stopwords=True, stemming=True)
             for token_ in tokens_:
                 term_index = terms.index(token_)
-                num_docs[term_index] += len(bernoulli_inv_index.get_postings_list(token_))
+                posting_list_ = bernoulli_inv_index.get_postings_list(token_)
+                num_docs[term_index] = len(posting_list_)
                 num_instances[term_index] += 1
         self.class_vocab_count[class_value] = voc_count
         conditional_probs = np.array([terms, num_instances, num_docs])
@@ -491,7 +492,7 @@ class NaiveBayesClassifier(DocumentProcessing):
                     if word in tokens:
                         output += np.log(instance)
                     else:
-                        output += 1 - np.log(instance)
+                        output += np.log(1 - instance)
                 argmax[class_value] = output
             return max(argmax, key=argmax.get)
         elif mode == "m": # multinomial
@@ -537,7 +538,7 @@ class NaiveBayesClassifier(DocumentProcessing):
                         if word in tokens:
                             output += np.log(instance)
                         else:
-                            output += 1 - np.log(instance)
+                            output += np.log(1-instance)
                     maxima[class_value] = output
                     print(maxima)
                 predictions.append(max(maxima, key=maxima.get))
@@ -549,13 +550,17 @@ if __name__ == "__main__":
     inv_index = InvertedIndex("test")
     cl_df = inv_index.classifier_df
     nb = NaiveBayesClassifier(cl_df)
+    print(inv_index.classifier_df.df.shape)
+    print(nb.raw_data[nb.raw_data["class"] == "business"])
     nb.fit()
+    print(nb.bernoulli_index["business"])
     b_preds = nb.predict_multiple(cl_df.X_test, mode="b")
     m_preds = nb.predict_multiple(cl_df.X_test, mode="m")
     test_labels = cl_df.y_test
 
     for i in range(len(b_preds)):
-        print("{} --- {}".format(b_preds.iloc[i], test_labels.iloc[i]))
+        print("{} --- {}".format(b_preds.loc[i, "class_predictions"], test_labels.loc[i, "class"]))
+
 
     # nbm_pred_ = nbm_pred.class_predictions.map({"politics":0, "entertainment":1,"sport":2,"business":3, "tech" :4}).values
     # nbb_pred_ = nbb_pred.class_predictions.map(
