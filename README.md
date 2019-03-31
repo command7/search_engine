@@ -14,11 +14,12 @@ An Information Retrieval system that is capable of accommodating
 * Numpy
 * nltk
 * pickle
-* string
-* operator
 * sklearn (For calculation of performance metrics)
 
 ## How To Run
+
+Currently this is a command line application and the following commands can 
+be used to utilize the features of the system.
 
 ### Boolean Search
 
