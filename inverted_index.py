@@ -450,8 +450,7 @@ class SearchEngine(DocumentProcessing):
                 vsm_scores[document_id_] = vsm_scores[document_id_] / \
                     self.docLengths[document_id_]
             ranked_results = sorted(vsm_scores.items(),
-                                    key=operator.itemgetter(1))
-            print(vsm_scores)
+                                    key=operator.itemgetter(1), reverse=True)
             if len(ranked_results) > 10:
                 result_docs = [ranked_results[rank][0]
                                for rank in range(0, 10)]
