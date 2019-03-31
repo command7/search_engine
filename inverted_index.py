@@ -16,12 +16,14 @@ import sys
 
 
 class Document():
-    def __init__(self, document_id, position, store_term_weight = False):
+    def __init__(self, document_id, args**, store_term_weights = False):
         self.id = document_id
         self.positions = []
-        if store_term_weight == True:
+        if store_term_weights == True:
             self.term_weight = 1
-        self.add_position(position)
+        else:
+            self.positions = []
+            self.add_position(args[0])
 
     # Adds a position of a term to the Doc object.
     def add_position(self, position):
@@ -124,7 +126,10 @@ class InvertedIndex(DocumentProcessing):
             if (processed_tokens[token_index] not in self.terms):
                 self.terms.append(processed_tokens[token_index])
                 new_postings_list = list()
-                new_doc = Document(document_id, token_index + 1)
+                if self.purpose == "vsm":
+                    new_doc = Document(document_id, store_term_weights = True)
+                else:
+                    new_doc = Document(document_id, token_index + 1)
                 new_postings_list.append(new_doc)
                 self.posting_lists.append(new_postings_list)
             else:
@@ -132,12 +137,16 @@ class InvertedIndex(DocumentProcessing):
                 doc_exists = False
                 for i in range(len(existing_posting_list)):
                     if existing_posting_list[i].id == document_id:
-                        existing_posting_list[i].add_position(token_index +1)
                         if self.purpose == "vsm":
                             existing_posting_list[i].increment_frequency()
+                        else:
+                            existing_posting_list[i].add_position(token_index + 1)
                         doc_exists = True
                 if doc_exists == False:
-                    new_doc = Document(document_id, token_index + 1)
+                    if self.purpose == "vsm":
+                        new_doc = Document(document_id, store_term_weights = True)
+                    else:
+                        new_doc = Document(document_id, token_index + 1)
                     existing_posting_list.append(new_doc)
 
     def calculate_tfidf(self):
@@ -172,10 +181,13 @@ class InvertedIndex(DocumentProcessing):
 """Deals with search queries."""
 
 class SearchEngine(DocumentProcessing):
-    def __init__(self, inverted_index):
+    def __init__(self, inverted_index, purpose="bs"):
+        self.purpose = purpose
         self.terms = inverted_index.terms
         self.documents = inverted_index.documents
         self.posting_lists = inverted_index.posting_lists
+        if self.purpose == "vsm":
+            self.docLengths = inverted_index.docLengths
 
     # Provide a string query and returns a posting list with Documents containing all the terms
     def boolean_and_query(self, query):
@@ -252,6 +264,9 @@ class SearchEngine(DocumentProcessing):
             else:
                 pointer_one += 1
         return intersect_documents
+
+    def ranked_search(self):
+        pass
 
     # Prints out search results
     def print_search_results(self, result_docs):
