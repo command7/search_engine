@@ -86,7 +86,7 @@ class InvertedIndex(DocumentProcessing):
 
     def load_data(self, directory, ignore_stopwords = True, is_text = False):
         if is_text:
-            self.parse_document(directory, is_text=True)
+            self.parse_document(directory, ignore_stopwords, is_text=True)
         else:
             current_directory = os.getcwd()
             doc_directory = os.path.join(current_directory, directory)
@@ -414,7 +414,7 @@ class NaiveBayesClassifier(DocumentProcessing):
         return float(class_df[class_df.terms == word].loc[:, "conditional_probability"])
 
     def get_bernoulli_condition_probability(self, word, class_value):
-        lass_df = self.conditional_probabilities[class_value]
+        class_df = self.conditional_probabilities[class_value]
         return float(class_df[class_df.terms == word].loc[:, "bernoulli_probability"])
 
     def fit(self):
@@ -487,7 +487,7 @@ class NaiveBayesClassifier(DocumentProcessing):
                 class_df = self.conditional_probabilities[class_value]
                 output = self.priors[class_value]
                 for word in np.array(class_df.terms):
-                    instance = self.get_conditional_probability(word, class_value)
+                    instance = self.get_bernoulli_condition_probability(word, class_value)
                     if word in tokens:
                         output += np.log(instance)
                     else:
@@ -508,7 +508,7 @@ class NaiveBayesClassifier(DocumentProcessing):
 
     def predict_multiple(self, testing_df, mode):
         predictions = []
-        if mode == "m": #bernoulli
+        if mode == "m": #multinomial
             for document_content in testing_df["document_contents"].values:
                 tokens = self.pre_process(str(document_content))
                 maxima = dict()
@@ -525,7 +525,7 @@ class NaiveBayesClassifier(DocumentProcessing):
                 predictions.append(max(maxima, key=maxima.get))
             predictions_df = pd.DataFrame(predictions, columns=["class_predictions"])
             return predictions_df
-        elif mode == "m": # multinomial
+        elif mode == "b": # bernoulli
             for document_content in testing_df["document_contents"].values:
                 tokens = self.pre_process(str(document_content))
                 maxima = dict()
@@ -533,7 +533,7 @@ class NaiveBayesClassifier(DocumentProcessing):
                     class_df = self.conditional_probabilities[class_value]
                     output = self.priors[class_value]
                     for word in np.array(class_df.terms):
-                        instance = self.get_conditional_probability(word, class_value)
+                        instance = self.get_bernoulli_condition_probability(word, class_value)
                         if word in tokens:
                             output += np.log(instance)
                         else:
@@ -545,39 +545,29 @@ class NaiveBayesClassifier(DocumentProcessing):
             return predictions_df
 
 
-
-def load_data(directory, inv_index, classifier_df):
-    current_directory = os.getcwd()
-    doc_directory = os.path.join(current_directory, directory)
-    for class_ in os.listdir(doc_directory):
-        class_docs_loc = os.path.join(doc_directory, class_)
-        if(os.path.isdir(class_docs_loc)):
-            for class_document in os.listdir(class_docs_loc):
-                if not class_document.startswith("."):
-                    doc_location = os.path.join(class_docs_loc, class_document)
-                    classifier_df.add_document(doc_location, class_)
-                    inv_index.parse_document(doc_location)
-
-
 if __name__ == "__main__":
-    nbm_pred = pd.read_csv("multinomial_predictions.csv")
-    nbb_pred = pd.read_csv("bernoulli_predictions.csv")
-    nb = pickle.load(open("Naive_Bayes.p", "rb"))
-    raw_data = pickle.load(open("Data.p", "rb"))
-    test_labels = raw_data.y_test
+    inv_index = InvertedIndex("test")
+    cl_df = inv_index.classifier_df
+    nb = NaiveBayesClassifier(cl_df)
+    nb.fit()
+    b_preds = nb.predict_multiple(cl_df.X_test, mode="b")
+    m_preds = nb.predict_multiple(cl_df.X_test, mode="m")
+    test_labels = cl_df.y_test
 
+    for i in range(len(b_preds)):
+        print("{} --- {}".format(b_preds.iloc[i], test_labels.iloc[i]))
 
-    nbm_pred_ = nbm_pred.class_predictions.map({"politics":0, "entertainment":1,"sport":2,"business":3, "tech" :4}).values
-    nbb_pred_ = nbb_pred.class_predictions.map(
-        {"politics": 0, "entertainment": 1, "sport": 2, "business": 3, "tech": 4}).values
-    test_labels_ = test_labels["class"].map(
-        {"politics": 0, "entertainment": 1, "sport": 2, "business": 3, "tech": 4}).values
-    m_precision, m_recall, m_f_score, m_accuracy = nb.calculate_metrics(nbm_pred_, test_labels_)
-    b_precision, b_recall, b_f_score, b_accuracy = nb.calculate_metrics(nbb_pred_, test_labels_)
-    print("Multinomial Model")
-    print("Accuracy: {}".format(m_accuracy))
-    print("Bernoulli Model")
-    print("Accuracy: {}".format(b_accuracy))
+    # nbm_pred_ = nbm_pred.class_predictions.map({"politics":0, "entertainment":1,"sport":2,"business":3, "tech" :4}).values
+    # nbb_pred_ = nbb_pred.class_predictions.map(
+    #     {"politics": 0, "entertainment": 1, "sport": 2, "business": 3, "tech": 4}).values
+    # test_labels_ = test_labels["class"].map(
+    #     {"politics": 0, "entertainment": 1, "sport": 2, "business": 3, "tech": 4}).values
+    # m_precision, m_recall, m_f_score, m_accuracy = nb.calculate_metrics(nbm_pred_, test_labels_)
+    # b_precision, b_recall, b_f_score, b_accuracy = nb.calculate_metrics(nbb_pred_, test_labels_)
+    # print("Multinomial Model")
+    # print("Accuracy: {}".format(m_accuracy))
+    # print("Bernoulli Model")
+    # print("Accuracy: {}".format(b_accuracy))
 
 
 
