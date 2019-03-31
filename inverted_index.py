@@ -57,7 +57,7 @@ Deals with pre-processing queries and document text as well as retrieving
 posting lists."""
 
 
-class DocumentProcessing:
+class DocumentProcessing():
 
     def pre_process(self, document_content, remove_stopwords=False,
                     stemming=False):
@@ -147,7 +147,7 @@ class InvertedIndex(DocumentProcessing):
             doc_directory = os.path.join(current_directory, directory)
             for class_ in os.listdir(doc_directory):
                 class_docs_loc = os.path.join(doc_directory, class_)
-                if (os.path.isdir(class_docs_loc)):
+                if os.path.isdir(class_docs_loc):
                     for class_document in os.listdir(class_docs_loc):
                         if not class_document.startswith("."):
                             doc_location = os.path.join(class_docs_loc,
@@ -196,9 +196,9 @@ class InvertedIndex(DocumentProcessing):
 
     def read_text_file(self, filename):
         """
-
-        :param filename:
-        :return:
+        Open text file and read its contents into an entire string
+        :param filename: Path to file
+        :return: Text content of document
         """
         current_dir = os.getcwd()
         doc_path = os.path.join(current_dir, filename)
@@ -210,9 +210,13 @@ class InvertedIndex(DocumentProcessing):
             return None
         return whole_doc
 
-    # Add a new term and posting list to inverted index if a new term is found.
-    # Update inverted index otherwise.
     def update_inv_index(self, processed_tokens, document_id):
+        """
+        Update Inverted Index with new document contents
+        :param processed_tokens: Processed tokens of new document's content
+        :param document_id: Unique document ID of the new document
+        :return: None
+        """
         for token_index in range(0, len(processed_tokens)):
             if processed_tokens[token_index] not in self.terms:
                 self.terms.append(processed_tokens[token_index])
@@ -244,6 +248,12 @@ class InvertedIndex(DocumentProcessing):
                     existing_posting_list.append(new_doc)
 
     def calculate_tfidf(self):
+        """
+        Calculate term frequency * inverted document frequency for each term
+        and update each document in respective postings list with the new
+        term weight.
+        :return: None
+        """
         total_num_docs = len(self.documents)
         for term in self.terms:
             term_posting_list = self.get_postings_list(term)
@@ -262,6 +272,10 @@ class InvertedIndex(DocumentProcessing):
 
     # Print out inverted index
     def __repr__(self):
+        """
+        Representable form of inverted index
+        :return: String format of object to display
+        """
         output = ""
         for i in range(0, len(self.terms)):
             output += "{:>12}\t".format(self.terms[i])
@@ -563,10 +577,10 @@ Bayes Rule
 
 
 class NaiveBayesClassifier(DocumentProcessing):
-    def __init__(self, Classifier_df):
+    def __init__(self, classifier_df):
         self.raw_data = None
-        self.raw_training_documents = Classifier_df.X_train
-        self.training_class_labels = Classifier_df.y_train
+        self.raw_training_documents = classifier_df.X_train
+        self.training_class_labels = classifier_df.y_train
         self.priors = dict()
         self.conditional_probabilities = dict()
         self.total_vocab_count = 0
