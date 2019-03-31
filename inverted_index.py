@@ -867,3 +867,7 @@ if __name__ == "__main__":
             open("pickled_objects/VSM_Search_Engine.p", "rb"))
         query = " ".join(sys.argv[2:])
         results = search_engine.ranked_search(query)
+        for result in results:
+            print("Document Number: {}".format(result))
+            print(search_engine.documents[result][:100] + "\n\n")
+        print("Documents IDs : \n {}".format(results))
