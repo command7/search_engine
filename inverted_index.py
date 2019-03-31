@@ -16,7 +16,7 @@ import sys
 
 
 class Document():
-    def __init__(self, document_id, args**, store_term_weights = False):
+    def __init__(self, document_id, *args, store_term_weights = False):
         self.id = document_id
         self.positions = []
         if store_term_weights == True:
@@ -265,8 +265,31 @@ class SearchEngine(DocumentProcessing):
                 pointer_one += 1
         return intersect_documents
 
-    def ranked_search(self):
-        pass
+    def ranked_search(self, query):
+        vsm_scores = dict()
+        if self.purpose == "bs":
+            print("Cannot proceed as Inverted Index supplied does not contain term weights.")
+            raise Exception
+        else:
+            query_tokens = self.pre_process(query, remove_stopwords=False, stemming=True)
+            for q_token in query_tokens:
+                if q_token not in self.terms:
+                    continue
+                else:
+                    q_posting_list = self.get_postings_list(q_token)
+                    query_token_tfidf = (1 + np.log10(1)) * (len(self.documents)* 1.0 / len(q_posting_list))
+                    for document_ in q_posting_list:
+                        score = document_.term_weight * query_token_tfidf
+                        if score in vsm_scores.keys():
+                            vsm_scores[document_.id] += score
+                        else:
+                            vsm_scores[document_.id] = score
+            ranked_results = sorted(vsm_scores.items(), key=operator.itemgetter(1))
+            result_docs = [ranked_results[rank][0] for rank in range(0, 10)]
+            return result_docs
+
+
+
 
     # Prints out search results
     def print_search_results(self, result_docs):
@@ -506,20 +529,20 @@ def load_data(directory, inv_index, classifier_df):
                     inv_index.parse_document(doc_location)
 
 
-if __name__ == "__main__":
+# if __name__ == "__main__":
     # inv_index = InvertedIndex()
     # classifer_df = ClassifierDataFrame()
     # load_data("documents", inv_index, classifer_df)
     # pickle.dump(inv_index, open("Inverted_Index.p", "wb+"))
     # pickle.dump(classifer_df, open("raw_data_df.p", "wb+"))
 
-    inv_index = pickle.load(open("Inverted_Index.p", "rb"))
-    cl_df = pickle.load(open("raw_data_df.p", "rb"))
-    nb = pickle.load(open("Naive_Bayes.p", "rb"))
-    predictions_multinomial = nb.predict_multiple(cl_df.X_test, "m")
-    predictions_bernoulli = nb.predict_multiple(cl_df.X_test, "b")
-    predictions_multinomial.to_csv("multinomial_predictions.csv")
-    predictions_bernoulli.to_csv("bernoulli_predictions.csv")
+    # inv_index = pickle.load(open("Inverted_Index.p", "rb"))
+    # cl_df = pickle.load(open("raw_data_df.p", "rb"))
+    # nb = pickle.load(open("Naive_Bayes.p", "rb"))
+    # predictions_multinomial = nb.predict_multiple(cl_df.X_test, "m")
+    # predictions_bernoulli = nb.predict_multiple(cl_df.X_test, "b")
+    # predictions_multinomial.to_csv("multinomial_predictions.csv")
+    # predictions_bernoulli.to_csv("bernoulli_predictions.csv")
 
     # predictions = nb.predict_multiple(cl_df.X_test)
     # print(predictions)
