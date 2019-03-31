@@ -439,7 +439,7 @@ class SearchEngine(DocumentProcessing):
                 else:
                     q_posting_list = self.get_postings_list(q_token)
                     query_token_tfidf = (1 + np.log10(1)) * \
-                                        (len(self.documents) *
+                                        np.log10(len(self.documents) *
                                          1.0 / len(q_posting_list))
                     for document_ in q_posting_list:
                         score = document_.term_weight * query_token_tfidf
@@ -452,6 +452,7 @@ class SearchEngine(DocumentProcessing):
                     self.docLengths[document_id_]
             ranked_results = sorted(vsm_scores.items(),
                                     key=operator.itemgetter(1), reverse=True)
+            print(ranked_results)
             if len(ranked_results) > 10:
                 result_docs = [ranked_results[rank][0]
                                for rank in range(0, 10)]
