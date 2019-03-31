@@ -469,7 +469,7 @@ class NaiveBayesClassifier(DocumentProcessing):
                         instance = self.get_conditional_probability(word, class_value)
                         output += np.log(instance)
                     else:
-                        output += np.log(1/(self.class_vocab_count[class_value] + 1))
+                        output += np.log(1/(self.class_vocab_count[class_value] + self.total_vocab_count))
             return max(argmax, key=argmax.get)
 
     def predict_multiple(self, testing_df, mode):
@@ -533,10 +533,7 @@ def load_data(directory, inv_index, classifier_df):
 
 
 if __name__ == "__main__":
-    inv_index = InvertedIndex("documents", "vsm")
-    engine = SearchEngine(inv_index)
-    pickle.dump(engine, open("VSM_Search_Engine.p", "wb"))
-    pickle.dump(inv_index.classifier_df, open("Data.p", "wb"))
+
     # inv_index = InvertedIndex()
     # classifer_df = ClassifierDataFrame()
     # load_data("documents", inv_index, classifer_df)
