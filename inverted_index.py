@@ -548,29 +548,29 @@ class NaiveBayesClassifier(DocumentProcessing):
             return predictions_df
 
 
-if __name__ == "__main__":
-    inv_index = InvertedIndex("documents")
-    cl_df = inv_index.classifier_df
-    nb = NaiveBayesClassifier(cl_df)
-    nb.fit()
-    b_preds = nb.predict_multiple(cl_df.X_test, mode="b")
-    b_preds.to_csv("bernoulli_predictions.csv")
-    m_preds = nb.predict_multiple(cl_df.X_test, mode="m")
-    m_preds.to_csv("multinomial_predictions")
-    test_labels = cl_df.y_test
-
-
-    nbm_pred_ = m_preds.class_predictions.map({"politics":0, "entertainment":1,"sport":2,"business":3, "tech" :4}).values
-    nbb_pred_ = b_preds.class_predictions.map(
-        {"politics": 0, "entertainment": 1, "sport": 2, "business": 3, "tech": 4}).values
-    test_labels_ = test_labels["class"].map(
-        {"politics": 0, "entertainment": 1, "sport": 2, "business": 3, "tech": 4}).values
-    m_precision, m_recall, m_f_score, m_accuracy = nb.calculate_metrics(nbm_pred_, test_labels_)
-    b_precision, b_recall, b_f_score, b_accuracy = nb.calculate_metrics(nbb_pred_, test_labels_)
-    print("Multinomial Model")
-    print("Accuracy: {}".format(m_accuracy))
-    print("Bernoulli Model")
-    print("Accuracy: {}".format(b_accuracy))
+# if __name__ == "__main__":
+#     inv_index = InvertedIndex("documents")
+#     cl_df = inv_index.classifier_df
+#     nb = NaiveBayesClassifier(cl_df)
+#     nb.fit()
+#     b_preds = nb.predict_multiple(cl_df.X_test, mode="b")
+#     b_preds.to_csv("bernoulli_predictions.csv")
+#     m_preds = nb.predict_multiple(cl_df.X_test, mode="m")
+#     m_preds.to_csv("multinomial_predictions")
+#     test_labels = cl_df.y_test
+#
+#
+#     nbm_pred_ = m_preds.class_predictions.map({"politics":0, "entertainment":1,"sport":2,"business":3, "tech" :4}).values
+#     nbb_pred_ = b_preds.class_predictions.map(
+#         {"politics": 0, "entertainment": 1, "sport": 2, "business": 3, "tech": 4}).values
+#     test_labels_ = test_labels["class"].map(
+#         {"politics": 0, "entertainment": 1, "sport": 2, "business": 3, "tech": 4}).values
+#     m_precision, m_recall, m_f_score, m_accuracy = nb.calculate_metrics(nbm_pred_, test_labels_)
+#     b_precision, b_recall, b_f_score, b_accuracy = nb.calculate_metrics(nbb_pred_, test_labels_)
+#     print("Multinomial Model")
+#     print("Accuracy: {}".format(m_accuracy))
+#     print("Bernoulli Model")
+#     print("Accuracy: {}".format(b_accuracy))
 
 
 if __name__ == "__main__":
