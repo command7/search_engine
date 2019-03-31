@@ -16,20 +16,16 @@ import sys
 
 
 class Document():
-    def __init__(self, document_id, position, term_weight = False):
+    def __init__(self, document_id, position, store_term_weight = False):
         self.id = document_id
         self.positions = []
+        if store_term_weight == True:
+            self.term_weight = 1
         self.add_position(position)
 
     # Adds a position of a term to the Doc object.
     def add_position(self, position):
         self.positions.append(position)
-
-
-class DocumentVSM():
-    def __init__(self, document_id):
-        self.id = document_id
-        self.tw = 1
 
     def increment_frequency(self):
         self.tw += 1
@@ -64,10 +60,31 @@ class DocumentProcessing():
 """ Storage class for parsing documents and constructing inverted index. """
 class InvertedIndex(DocumentProcessing):
     num_documents = 0
-    def __init__(self):
+    def __init__(self, document_directory, purpose="bs"):
         self.documents = list()
         self.terms = list()
         self.posting_lists = list()
+        self.purpose = purpose
+        self.classifier_df = ClassifierDataFrame()
+        if self.purpose == "vsm":
+            self.load_data(document_directory, False)
+            self.calculate_tfidf()
+            self.docLengths = dict()
+        else:
+            self.load_data(document_directory)
+        self.classifier_df.split_training_testing_set(t_size=0.2)
+
+    def load_data(self, directory, ignore_stopwords = True):
+        current_directory = os.getcwd()
+        doc_directory = os.path.join(current_directory, directory)
+        for class_ in os.listdir(doc_directory):
+            class_docs_loc = os.path.join(doc_directory, class_)
+            if (os.path.isdir(class_docs_loc)):
+                for class_document in os.listdir(class_docs_loc):
+                    if not class_document.startswith("."):
+                        doc_location = os.path.join(class_docs_loc, class_document)
+                        self.classifier_df.add_document(doc_location, class_)
+                        self.parse_document(doc_location, ignore_stopwords)
 
     # Assign a new document id for new documents
     def assign_document_id(self):
@@ -75,11 +92,14 @@ class InvertedIndex(DocumentProcessing):
         return InvertedIndex.num_documents - 1
 
     # Parses a new document, preprocesses it and updates the inverted index
-    def parse_document(self, file_name):
+    def parse_document(self, file_name, ignore_stopwords):
         document_id = self.assign_document_id()
         document_text = self.read_text_file(file_name)
         self.add_document(document_text)
-        processed_tokens = self.pre_process(document_text, remove_stopwords=True, stemming=True)
+        if ignore_stopwords == True:
+            processed_tokens = self.pre_process(document_text, remove_stopwords=True, stemming=True)
+        else:
+            processed_tokens = self.pre_process(document_text, stemming=True)
         self.update_inv_index(processed_tokens, document_id)
 
     # Adds the document to storage
@@ -113,10 +133,26 @@ class InvertedIndex(DocumentProcessing):
                 for i in range(len(existing_posting_list)):
                     if existing_posting_list[i].id == document_id:
                         existing_posting_list[i].add_position(token_index +1)
+                        if self.purpose == "vsm":
+                            existing_posting_list[i].increment_frequency()
                         doc_exists = True
                 if doc_exists == False:
                     new_doc = Document(document_id, token_index + 1)
                     existing_posting_list.append(new_doc)
+
+    def calculate_tfidf(self):
+        total_num_docs = len(self.documents)
+        for term in self.terms:
+            term_posting_list = self.get_postings_list(term)
+            num_docs_term = len(term_posting_list)
+            invert_doc_frequency = np.log10(total_num_docs/(num_docs_term*1.0))
+            for indiv_doc in term_posting_list:
+                tfidf = (1 + np.log10(indiv_doc.term_weight)) * invert_doc_frequency
+                indiv_doc.term_weight = tfidf
+                if indiv_doc.id in self.docLengths.keys():
+                    self.docLengths[indiv_doc.id] += np.square(tfidf)
+                else:
+                    self.docLengths[indiv_doc.id] = np.square(tfidf)
 
     # Print out inverted index
     def __repr__(self):
