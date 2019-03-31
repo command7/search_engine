@@ -62,7 +62,7 @@ class DocumentProcessing():
 """ Storage class for parsing documents and constructing inverted index. """
 class InvertedIndex(DocumentProcessing):
     num_documents = 0
-    def __init__(self, document_directory, purpose="bs"):
+    def __init__(self, document_loc, purpose="bs", is_dir=True):
         self.documents = list()
         self.terms = list()
         self.posting_lists = list()
@@ -70,23 +70,32 @@ class InvertedIndex(DocumentProcessing):
         self.classifier_df = ClassifierDataFrame()
         self.docLengths = dict()
         if self.purpose == "vsm":
-            self.load_data(document_directory, False)
+            if is_dir:
+                self.load_data(document_loc, ignore_stopwords=False)
+            else:
+                self.load_data(document_loc, ignore_stopwords=False, is_text = True)
             self.calculate_tfidf()
         else:
-            self.load_data(document_directory)
+            if is_dir:
+                self.load_data(document_loc)
+            else:
+                self.load_data(is_text=True)
         self.classifier_df.split_training_testing_set(t_size=0.2)
 
-    def load_data(self, directory, ignore_stopwords = True):
-        current_directory = os.getcwd()
-        doc_directory = os.path.join(current_directory, directory)
-        for class_ in os.listdir(doc_directory):
-            class_docs_loc = os.path.join(doc_directory, class_)
-            if (os.path.isdir(class_docs_loc)):
-                for class_document in os.listdir(class_docs_loc):
-                    if not class_document.startswith("."):
-                        doc_location = os.path.join(class_docs_loc, class_document)
-                        self.classifier_df.add_document(doc_location, class_)
-                        self.parse_document(doc_location, ignore_stopwords)
+    def load_data(self, directory, ignore_stopwords = True, is_text = False):
+        if is_text:
+            self.parse_document(directory, is_text=True)
+        else:
+            current_directory = os.getcwd()
+            doc_directory = os.path.join(current_directory, directory)
+            for class_ in os.listdir(doc_directory):
+                class_docs_loc = os.path.join(doc_directory, class_)
+                if (os.path.isdir(class_docs_loc)):
+                    for class_document in os.listdir(class_docs_loc):
+                        if not class_document.startswith("."):
+                            doc_location = os.path.join(class_docs_loc, class_document)
+                            self.classifier_df.add_document(doc_location, class_)
+                            self.parse_document(doc_location, ignore_stopwords)
 
     # Assign a new document id for new documents
     def assign_document_id(self):
@@ -94,9 +103,12 @@ class InvertedIndex(DocumentProcessing):
         return InvertedIndex.num_documents - 1
 
     # Parses a new document, preprocesses it and updates the inverted index
-    def parse_document(self, file_name, ignore_stopwords):
+    def parse_document(self, file_name, ignore_stopwords, is_text = False):
         document_id = self.assign_document_id()
-        document_text = self.read_text_file(file_name)
+        if is_text:
+            document_text = file_name
+        else:
+            document_text = self.read_text_file(file_name)
         self.add_document(document_text)
         if ignore_stopwords == True:
             processed_tokens = self.pre_process(document_text, remove_stopwords=True, stemming=True)
@@ -389,6 +401,7 @@ class NaiveBayesClassifier(DocumentProcessing):
         self.consolidate_training_set()
         self.parse_vocabulary()
         self.N = self.raw_data.shape[0]
+        self.bernoulli_index = dict()
 
     def consolidate_training_set(self):
         consolidated_df = pd.concat([self.raw_training_documents, self.training_class_labels], axis=1)
@@ -401,6 +414,13 @@ class NaiveBayesClassifier(DocumentProcessing):
     def fit(self):
         for class_value in self.class_values:
             self.calculate_probabilities(class_value)
+            self.build_bernoulli_index(class_value)
+
+    def build_bernoulli_index(self, class_value):
+        class_docs = list(self.raw_data[self.raw_data["class"] == class_value].copy()["document_contents"])
+        for class_doc in class_docs:
+            tokens = self.pre_process(class_doc, remove_stopwords=True, stemming=True)
+
 
     def parse_vocabulary(self):
         for class_value_ in self.class_values:
@@ -491,7 +511,6 @@ class NaiveBayesClassifier(DocumentProcessing):
                     maxima[class_value] = output
                 predictions.append(max(maxima, key=maxima.get))
             predictions_df = pd.DataFrame(predictions, columns=["class_predictions"])
-            predictions_df.to_csv("test_predictions.csv")
             return predictions_df
         elif mode == "m": # multinomial
             for document_content in testing_df["document_contents"].values:
@@ -507,11 +526,11 @@ class NaiveBayesClassifier(DocumentProcessing):
                         else:
                             output += 1 - np.log(instance)
                     maxima[class_value] = output
+                    print(maxima)
                 predictions.append(max(maxima, key=maxima.get))
             predictions_df = pd.DataFrame(predictions, columns=["class_predictions"])
-            predictions_df.to_csv("test_predictions.csv")
             return predictions_df
-        # predictions_df.to_csv("test_predictions.csv")
+
 
 
 def load_data(directory, inv_index, classifier_df):
@@ -532,7 +551,6 @@ if __name__ == "__main__":
     nbb_pred = pd.read_csv("bernoulli_predictions.csv")
     nb = pickle.load(open("Naive_Bayes.p", "rb"))
     raw_data = pickle.load(open("Data.p", "rb"))
-    early_test = pd.read_csv("t")
     test_labels = raw_data.y_test
 
 
