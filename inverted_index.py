@@ -60,7 +60,7 @@ posting lists."""
 class DocumentProcessing():
 
     def pre_process(self, document_content, remove_stopwords=False,
-                    stemming=False):
+                    stemming=True):
         """
         Tokenize, remove stopwords, stem tokens
         :param document_content: Entire document text
@@ -368,7 +368,8 @@ class SearchEngine(DocumentProcessing):
         :param query: Search query
         :return: List of documents that match the search criteria
         """
-        processed_query = self.pre_process(query)
+        processed_query = self.pre_process(query, remove_stopwords=True,
+                                           stemming=True)
         query_results = None
         all_terms_exist = True
         for token in processed_query:
@@ -418,7 +419,7 @@ class SearchEngine(DocumentProcessing):
                 pointer_one += 1
         return intersect_documents
 
-    def ranked_search(self, query):
+    def ranked_search(self, query, k=10):
         """
         Search for top 10 documents that match the query using Vector Space
         Model scores.
@@ -443,7 +444,7 @@ class SearchEngine(DocumentProcessing):
                                          1.0 / len(q_posting_list))
                     for document_ in q_posting_list:
                         score = document_.term_weight * query_token_tfidf
-                        if score in vsm_scores.keys():
+                        if document_.id in vsm_scores.keys():
                             vsm_scores[document_.id] += score
                         else:
                             vsm_scores[document_.id] = score
@@ -452,10 +453,9 @@ class SearchEngine(DocumentProcessing):
                     self.docLengths[document_id_]
             ranked_results = sorted(vsm_scores.items(),
                                     key=operator.itemgetter(1), reverse=True)
-            print(ranked_results)
-            if len(ranked_results) > 10:
+            if len(ranked_results) > k:
                 result_docs = [ranked_results[rank][0]
-                               for rank in range(0, 10)]
+                               for rank in range(0, k)]
             else:
                 result_docs = [ranked_results[rank][0]
                                for rank in range(0, len(ranked_results))]
@@ -781,7 +781,7 @@ class NaiveBayesClassifier(DocumentProcessing):
         predictions = []
         if mode == "m":  # multinomial
             for document_content in testing_df["document_contents"].values:
-                tokens = self.pre_process(str(document_content))
+                tokens = self.pre_process(str(document_content), stemming=True)
                 maxima = dict()
                 for class_value in self.class_values:
                     class_df = self.conditional_probabilities[class_value]
@@ -822,6 +822,24 @@ class NaiveBayesClassifier(DocumentProcessing):
             return predictions_df
 
 
+class KNN(DocumentProcessing):
+    def __init__(self, vsm_engine, id_matching):
+        self.search_engine = vsm_engine
+        self.id_matching = id_matching
+
+    def predict_single(self, document):
+        class_value_counts = dict()
+        doc_text = open(document, "r").read()
+        nearest_docs = self.search_engine.ranked_search(doc_text, k=5)
+        for doc_id in nearest_docs:
+            class_ = self.id_matching[doc_id]
+            if class_ in self.id_matching.keys():
+                class_value_counts[class_] += 1
+            else:
+                class_value_counts[class_] = 1
+        return max(class_value_counts, key=class_value_counts.get)
+
+
 if __name__ == "__main__":
     total_args = len(sys.argv)
     if sys.argv[1] == "--nb":
@@ -829,6 +847,11 @@ if __name__ == "__main__":
         document_name = sys.argv[2]
         doc_text = open(document_name, "r").read()
         prediction = nb_model.predict_single(doc_text, mode="m")
+        print("Prediction: {}".format(prediction))
+    elif sys.argv[1] == "--knn":
+        document_name = sys.argv[2]
+        knn_model = pickle.load(open("pickled_objects/KNN_Classifer.p", "rb"))
+        prediction = knn_model.predict_single(document_name)
         print("Prediction: {}".format(prediction))
     elif sys.argv[1] == "--bs":
         search_engine = pickle.load(
