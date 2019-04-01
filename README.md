@@ -7,6 +7,7 @@ An Information Retrieval system that is capable of accommodating
 *   Positional search queries
 *   Free text queries
 *   Naive Bayes Classification
+*   K Nearest Neighbor Classification
 
 ## Class values for Naive Bayes Classification
 
@@ -39,6 +40,7 @@ written to a text file called `query_results.txt`.
 | --ps          | Positional Search using Inverted Index      |
 | --vsm         | Free text search using Vector Space Model   |
 | --nb          | Naive Bayes Classification (Multinomial)    |
+| --knn         | K Nearest Neighbor Classification           |
 
 ## How To Run
 
@@ -61,7 +63,10 @@ be used to utilize the features of the system.
 
 `python3 search_engine.py --nb document_path`
 
-Where document_path = Location of document to classify
+### K Nearest Neighbour Classification
+
+`python3 search_engine.py --knn document_path`
+
 
 ## Test Queries to check functionality
 
@@ -115,3 +120,11 @@ The above command will search for documents that contain "New" and "York" in
  
  The above command will search and provides top 10 documents that are 
  similar to the query.
+ 
+ > python3 search_engine.py --knn test_documents/tech/tech_1.txt
+ 
+ It classifies the tech_1.txt document using K nearest neighbors classifier.
+ 
+ > python3 search_engine.py --nb test_documents/tech/tech_2.txt
+ 
+ It classifies the tech_1.txt document using Naive Bayes classifier.
