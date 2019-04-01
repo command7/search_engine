@@ -47,7 +47,7 @@ be used to utilize the features of the system.
 
 ### Boolean Search
 
-`python3 search_engine.py --bs *query`
+`**python3 search_engine.py --bs *query**`
 
 ### Positional Search
 
@@ -63,7 +63,7 @@ be used to utilize the features of the system.
 
 Where document_path = Location of document to classify
 
-### Test Queries to check functionality
+## Test Queries to check functionality
 
 A set of test queries that can be used to check the functionality of the 
 system are given below.
