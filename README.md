@@ -47,7 +47,7 @@ be used to utilize the features of the system.
 
 ### Boolean Search
 
-> python3 search_engine.py --bs *query
+`python3 search_engine.py --bs *query`
 
 ### Positional Search
 
@@ -90,6 +90,7 @@ can be used to test the functionality of the naive bayes classifier. These
 documents were not used to train the model and are from the testing set of 
 documents.
 
+Some examples are 
 * politics_1.txt
 * sport_1.txt
 * entertainment_1.txt
