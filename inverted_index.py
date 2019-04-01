@@ -418,7 +418,7 @@ class SearchEngine(DocumentProcessing):
                 pointer_one += 1
         return intersect_documents
 
-    def ranked_search(self, query):
+    def ranked_search(self, query, top_k=10):
         """
         Search for top 10 documents that match the query using Vector Space
         Model scores.
@@ -453,9 +453,9 @@ class SearchEngine(DocumentProcessing):
             ranked_results = sorted(vsm_scores.items(),
                                     key=operator.itemgetter(1), reverse=True)
             print(ranked_results)
-            if len(ranked_results) > 10:
+            if len(ranked_results) > top_k:
                 result_docs = [ranked_results[rank][0]
-                               for rank in range(0, 10)]
+                               for rank in range(0, top_k)]
             else:
                 result_docs = [ranked_results[rank][0]
                                for rank in range(0, len(ranked_results))]
