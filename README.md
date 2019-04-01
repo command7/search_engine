@@ -47,7 +47,7 @@ be used to utilize the features of the system.
 
 ### Boolean Search
 
-`**python3 search_engine.py --bs *query**`
+> python3 search_engine.py --bs *query
 
 ### Positional Search
 
