@@ -47,19 +47,19 @@ be used to utilize the features of the system.
 
 ### Boolean Search
 
-> python3 search_engine.py --bs *query
+`python3 search_engine.py --bs *query`
 
 ### Positional Search
 
-> python3 search_engine.py --ps *query
+`python3 search_engine.py --ps *query`
 
 ### Free Text Search
 
-> python3 search_engine.py --vsm *query
+`python3 search_engine.py --vsm *query`
 
 ### Naive Bayes Classification
 
-> python3 search_engine.py --nb document_path
+`python3 search_engine.py --nb document_path`
 
 Where document_path = Location of document to classify
 
