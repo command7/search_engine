@@ -851,7 +851,7 @@ if __name__ == "__main__":
         print("Prediction: {}".format(prediction))
     elif sys.argv[1] == "--knn":
         document_name = sys.argv[2]
-        knn_model = pickle.load(open("pickled_objects/KNN_Classifer.p", "rb"))
+        knn_model = pickle.load(open("pickled_objects/KNN_Classifier.p", "rb"))
         prediction = knn_model.predict_single(document_name)
         print("Prediction: {}".format(prediction))
     elif sys.argv[1] == "--bs":
