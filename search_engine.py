@@ -920,6 +920,7 @@ def run(mode, input):
             print("Total Number of Documents found: {}\n".format(len(results)))
             handle.write("Total Number of Documents found: {}\n".format
                          (len(results)))
+        return results
     elif mode == "--ps":
         search_engine = pickle.load(
             open("pickled_objects/Boolean_Search_Engine.p", "rb"))
@@ -937,6 +938,7 @@ def run(mode, input):
             print("Total Number of Documents found: {}\n".format(len(results)))
             handle.write("Total Number of Documents found: {}\n".format
                          (len(results)))
+        return results
     elif mode == "--vsm":
         search_engine = pickle.load(
             open("pickled_objects/VSM_Search_Engine.p", "rb"))
@@ -950,3 +952,4 @@ def run(mode, input):
                 print(search_engine.documents[result][:100] + "\n\n")
             handle.write("Documents IDs : \n {}".format(results))
             print("Documents IDs : \n {}".format(results))
+        return results
