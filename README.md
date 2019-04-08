@@ -27,9 +27,13 @@ written to a text file called `query_results.txt`.
 
 ## Dependencies Required
 
+All the dependencies required can be installed using pip
+
 * Pandas
 * Numpy
 * Nltk
+    * After installing NLTK, uncomment 3rd line in program to download 
+    essential dependent files.
 * Pickle
 
 ## Command Line Parameters
@@ -79,8 +83,8 @@ system are given below.
 
 **Positional Queries**
 
-* Idowu made his breakthrough
-* Third generation mobile
+* flattered and honoured
+* printed with registered trademarks
 
 **Free text Queries**
 
@@ -102,7 +106,9 @@ Some examples are
 * business_1.txt
 * tech_1.txt 
 
+## Link to full set of documents if required
 
+[https://drive.google.com/drive/folders/1tqJWz7wUYaVPhLadqFEhh4Rq8rt3kkkM?usp=sharing]
 
 ## Examples
 
@@ -128,3 +134,4 @@ The above command will search for documents that contain "New" and "York" in
  > python3 search_engine.py --nb test_documents/tech/tech_2.txt
  
  It classifies the tech_1.txt document using Naive Bayes classifier.
+ 

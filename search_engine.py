@@ -714,6 +714,9 @@ class NaiveBayesClassifier(DocumentProcessing):
         conditional_df["bernoulli_probability"] = (conditional_df[
                                                        "number_of_docs"] + 1
                                                    * 1.0)/(N_c + 2)
+        conditional_df["bernoulli_complement"] = np.log(1 - conditional_df[
+            "bernoulli_probability"])
+        conditional_df["bernoulli_probability"] = np.log(conditional_df["bernoulli_probability"])
         self.conditional_probabilities[class_value] = conditional_df
 
     def calculate_metrics(self, predictions, testing_labels):
@@ -745,13 +748,21 @@ class NaiveBayesClassifier(DocumentProcessing):
             for class_value in self.class_values:
                 class_df = self.conditional_probabilities[class_value]
                 output = self.priors[class_value]
-                for word in np.array(class_df.terms):
-                    instance = self.get_bernoulli_condition_probability(
-                        word, class_value)
-                    if word in tokens:
-                        output += np.log(instance)
-                    else:
-                        output += np.log(1 - instance)
+                probs = class_df.copy()
+                existing_terms_indices = list(probs[probs.terms.isin(
+                    tokens)].index)
+                for existing_term_index in existing_terms_indices:
+                    probs.iloc[existing_term_index, 2] = probs.iloc[
+                        existing_term_index, 1]
+                output += np.sum(probs["bernoulli_complement"])
+
+                # for word in np.array(class_df.terms):
+                #     instance = self.get_bernoulli_condition_probability(
+                #         word, class_value)
+                #     if word in tokens:
+                #         output += np.log(instance)
+                #     else:
+                #         output += np.log(1 - instance)
                 argmax[class_value] = output
             return max(argmax, key=argmax.get)
         elif mode == "m":  # multinomial
@@ -838,6 +849,26 @@ class KNN(DocumentProcessing):
             else:
                 class_value_counts[class_] = 1
         return max(class_value_counts, key=class_value_counts.get)
+
+def recompile_pickles(test=False):
+    inv_index = InvertedIndex(document_loc="documents", purpose="vsm")
+    cl_df = inv_index.classifier_df
+    nb = NaiveBayesClassifier(cl_df)
+    nb.fit()
+    test_loc = "test_objects/"
+    general_loc = "pickled_objects/"
+    if test:
+        pickle.dump(inv_index, open(test_loc+"Inverted_Index.p", "wb"))
+        pickle.dump(cl_df, open(test_loc + "ClassifierDataFrame.p", "wb"))
+        pickle.dump(nb, open(test_loc + "Naive_Bayes.p", "wb"))
+    else:
+        pickle.dump(inv_index, open(general_loc + "Inverted_Index.p", "wb"))
+        pickle.dump(cl_df, open(general_loc+ "ClassifierDataFrame.p", "wb"))
+        pickle.dump(nb, open(general_loc + "Naive_Bayes.p", "wb"))
+
+
+
+
 
 if __name__ == "__main__":
     total_args = len(sys.argv)
