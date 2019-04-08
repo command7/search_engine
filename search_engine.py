@@ -714,8 +714,10 @@ class NaiveBayesClassifier(DocumentProcessing):
         conditional_df["bernoulli_probability"] = (conditional_df[
                                                        "number_of_docs"] + 1
                                                    * 1.0)/(N_c + 2)
-        conditional_df["bernoulli_complement"] = np.log(1 - conditional_df[
-            "bernoulli_probability"])
+        conditional_df["bernoulli_complement"] = 1 - conditional_df[
+            "bernoulli_probability"]
+        conditional_df["bernoulli_complement"] = np.log(conditional_df[
+            "bernoulli_complement"])
         conditional_df["bernoulli_probability"] = np.log(conditional_df["bernoulli_probability"])
         self.conditional_probabilities[class_value] = conditional_df
 
@@ -858,9 +860,9 @@ def recompile_pickles(test=False):
     test_loc = "test_objects/"
     general_loc = "pickled_objects/"
     if test:
-        pickle.dump(inv_index, open(test_loc+"Inverted_Index.p", "wb"))
-        pickle.dump(cl_df, open(test_loc + "ClassifierDataFrame.p", "wb"))
-        pickle.dump(nb, open(test_loc + "Naive_Bayes.p", "wb"))
+        pickle.dump(inv_index, open(test_loc+"Inverted_Index.p", "wb+"))
+        pickle.dump(cl_df, open(test_loc + "ClassifierDataFrame.p", "wb+"))
+        pickle.dump(nb, open(test_loc + "Naive_Bayes.p", "wb+"))
     else:
         pickle.dump(inv_index, open(general_loc + "Inverted_Index.p", "wb"))
         pickle.dump(cl_df, open(general_loc+ "ClassifierDataFrame.p", "wb"))
@@ -868,27 +870,44 @@ def recompile_pickles(test=False):
 
 
 
-
-
 if __name__ == "__main__":
-    total_args = len(sys.argv)
-    if total_args <= 1:
-        print("Sufficient arguments not provided.")
-    elif sys.argv[1] == "--nb":
+    nb = pickle.load(open("pickled_objects/Naive_Bayes.p", "rb"))
+    cldf = pickle.load(open("pickled_objects/ClassifierDataFrame.p", "rb"))
+    print(nb.conditional_probabilities["sport"].head(5))
+    df = cldf.df
+    print(df[df["class"] == "sport"].shape[0])
+    print(nb.conditional_probabilities["politics"].head(5))
+#     doc = """Savvy searchers fail to spot ads
+#
+# Internet search engine users are an odd mix of naive and sophisticated, suggests a report into search habits.
+#
+# The report by the US Pew Research Center reveals that 87% of searchers usually find what they were looking for when using a search engine. It also shows that few can spot the difference between paid-for results and organic ones. The report reveals that 84% of net users say they regularly use Google, Ask Jeeves, MSN and Yahoo when online.
+#
+# Almost 50% of those questioned said they would trust search engines much less, if they knew information about who paid for results was being hidden. According to figures gathered by the Pew researchers the average users spends about 43 minutes per month carrying out 34 separate searches and looks at 1.9 webpages for each hunt. A significant chunk of net users, 36%, carry out a search at least weekly and 29% of those asked only look every few weeks. For 44% of those questioned, the information they are looking for is critical to what they are doing and is information they simply have to find.
+#
+# Search engine users also tend to be very loyal and once they have found a site they feel they can trust tend to stick with it. According to Pew Research 44% of searchers use just a single search engine, 48% use two or three and a small number, 7%, consult more than three sites. Tony Macklin, spokesman for Ask Jeeves, said the results reflected its own research which showed that people use different search engines because the way the sites gather information means they can provide different results for the same query. Despite this liking for search sites half of those questioned said they could get the same information via other routes. A small number, 17%, said they wouldn't really miss search engines if they did not exist. The remaining 33% said they could not live without search sites. More than two-thirds of those questioned, 68%, said they thought that the results they were presented with were a fair and unbiased selection of the information on a topic that can be found on the net. Alongside the growing sophistication of net users is a lack of awareness about paid-for results that many search engines provide alongside lists of websites found by indexing the web. Of those asked, 62% were unaware that someone has paid for some of the results they see when they carry out a search. Only 18% of all searchers say they can tell which results are paid for and which are not. Said the Pew report: "This finding is ironic, since nearly half of all users say they would stop using search engines if they thought engines were not being clear about how they presented paid results." Commenting Mr Macklin said sponsored results must be clearly marked and though they might help with some queries user testing showed that people need to be able to spot the difference.
+# """
+#     result = nb.predict_single(doc, mode="b")
+#     print(result)
+
+def run(mode, input):
+    elif mode == "--nb":
         nb_model = pickle.load(open("pickled_objects/Naive_Bayes.p", "rb"))
-        document_name = sys.argv[2]
+        document_name = input
         doc_text = open(document_name, "r").read()
         prediction = nb_model.predict_single(doc_text, mode="m")
-        print("Prediction: {}".format(prediction))
-    elif sys.argv[1] == "--knn":
-        document_name = sys.argv[2]
+        return prediction
+        # print("Prediction: {}".format(prediction))
+    elif mode == "--knn":
+        document_name = input
         knn_model = pickle.load(open("pickled_objects/KNN_Classifier.p", "rb"))
         prediction = knn_model.predict_single(document_name)
-        print("Prediction: {}".format(prediction))
-    elif sys.argv[1] == "--bs":
+        return prediction
+        # print("Prediction: {}".format(prediction))
+    elif mode == "--bs":
         search_engine = pickle.load(
             open("pickled_objects/Boolean_Search_Engine.p", "rb"))
-        query = " ".join(sys.argv[2:])
+        query = input
         results = search_engine.boolean_and_query(query)
         with open("query_result.txt", "w+") as handle:
             for result in results:
@@ -901,10 +920,10 @@ if __name__ == "__main__":
             print("Total Number of Documents found: {}\n".format(len(results)))
             handle.write("Total Number of Documents found: {}\n".format
                          (len(results)))
-    elif sys.argv[1] == "--ps":
+    elif mode == "--ps":
         search_engine = pickle.load(
             open("pickled_objects/Boolean_Search_Engine.p", "rb"))
-        query = " ".join(sys.argv[2:])
+        query = input
         results = search_engine.positional_search(query)
         with open("query_result.txt", "w+") as handle:
             for result in results:
@@ -918,10 +937,10 @@ if __name__ == "__main__":
             print("Total Number of Documents found: {}\n".format(len(results)))
             handle.write("Total Number of Documents found: {}\n".format
                          (len(results)))
-    elif sys.argv[1] == "--vsm":
+    elif mode == "--vsm":
         search_engine = pickle.load(
             open("pickled_objects/VSM_Search_Engine.p", "rb"))
-        query = " ".join(sys.argv[2:])
+        query = input
         results = search_engine.ranked_search(query)
         with open("query_result.txt", "w+") as handle:
             for result in results:
