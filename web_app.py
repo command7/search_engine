@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request
 import search_engine
+import time
 from search_engine import SearchEngine, InvertedIndex, DocumentProcessing, Document
 
 app = Flask(__name__)
@@ -15,14 +16,12 @@ def results():
     #do something
         user_input = request.form
         query = user_input["query"]
-        print(query)
-        #results = search("--bs", query)
+        starting_time = time.time()
         results, documents = search_engine.run("--bs", query)
+        print("Time taken: {}".format(time.time() - starting_time))
         with open("query_result.txt", "w+") as handle:
             result_dict = {}
             for result in results:
-                print(result.id)
-                print(documents[result.id])
                 result_dict[result.id] = documents[result.id]
     return render_template('results.html', result=result_dict)
 
