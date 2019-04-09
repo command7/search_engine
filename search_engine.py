@@ -942,7 +942,7 @@ def run(mode, input):
             print("Total Number of Documents found: {}\n".format(len(results)))
             handle.write("Total Number of Documents found: {}\n".format
                          (len(results)))
-        return results
+        return results, search_engine.documents
     elif mode == "--vsm":
         search_engine = SearchEngine.load_engine(
             "pickled_objects/VSM_Search_Engine.pickle")
@@ -956,4 +956,4 @@ def run(mode, input):
                 print(search_engine.documents[result][:100] + "\n\n")
             handle.write("Documents IDs : \n {}".format(results))
             print("Documents IDs : \n {}".format(results))
-        return results
+        return results, search_engine.documents
