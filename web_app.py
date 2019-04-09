@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request
 import search_engine
 import time
-from search_engine import SearchEngine, InvertedIndex, DocumentProcessing, Document
+from search_engine import SearchEngine, InvertedIndex, DocumentProcessing, Document, NaiveBayesClassifier, ClassifierDataFrame
 
 app = Flask(__name__)
 
@@ -16,10 +16,26 @@ def results():
     #do something
         user_input = request.form
         query = user_input["query"]
-        starting_time = time.time()
-        results, documents = search_engine.run("--bs", query)
-        print("Time taken: {}".format(time.time() - starting_time))
-        with open("query_result.txt", "w+") as handle:
+        type = user_input["search_type"]
+        if type == 'bs':
+            starting_time = time.time()
+            results, documents = search_engine.run("--bs", query)
+            print("Time taken: {}".format(time.time() - starting_time))
+            result_dict = {}
+            for result in results:
+                result_dict[result.id] = documents[result.id]
+        elif type == 'vsm':
+            starting_time = time.time()
+            results, documents = search_engine.run("--vsm", query)
+            print("Time taken: {}".format(time.time() - starting_time))
+            result_dict = {}
+            for doc in results:
+                result_dict[doc] = documents[doc]
+        # no .pickle yet
+        elif type == 'nb':
+            starting_time = time.time()
+            results, documents = search_engine.run("--nb", query)
+            print("Time taken: {}".format(time.time() - starting_time))
             result_dict = {}
             for result in results:
                 result_dict[result.id] = documents[result.id]
