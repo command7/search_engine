@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    {% if title %}
+      <title> {{ title }} </title>
+    {% else %}
+      <title> Search Engine </title>
+    {% endif %}
+  </head>
+  <body>
+    <form action="http://localhost:5000/results" method="POST">
+        <input type="text" name="query"/>
+        <input type="submit"/>
+      </form>
+  </body>
+</html>

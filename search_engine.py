@@ -11,7 +11,7 @@ import pickle
 from sklearn.metrics import f1_score, precision_score, recall_score, \
     accuracy_score
 from sklearn.model_selection import StratifiedShuffleSplit
-import sys
+import flask
 
 """
     Stores term weight, term frequency and document ids for
@@ -91,7 +91,7 @@ class DocumentProcessing():
         return self.posting_lists[term_index]
 
 
-""" Inverted Index used to store contents of documents after parsing and 
+""" Inverted Index used to store contents of documents after parsing and
 preprocessing them. """
 
 
@@ -290,7 +290,7 @@ class InvertedIndex(DocumentProcessing):
         return output
 
 
-"""Search Engine that seaches for documents matching a certain criteria and 
+"""Search Engine that seaches for documents matching a certain criteria and
 provides the user with those documents.
 ."""
 
@@ -510,8 +510,16 @@ class SearchEngine(DocumentProcessing):
                 pointer_one += 1
         return intersect_documents
 
+    def save_engine(self, filename):
+        pickle.dump(self, open(filename, "wb"))
 
-""" Stores training and testing set documents and their class values in a 
+    def load_engine(filename):
+        obj = pickle.load(open(filename, "rb"))
+        return obj
+    load_engine = staticmethod(load_engine)
+
+
+""" Stores training and testing set documents and their class values in a
 Pandas Data Frame.
 """
 
@@ -572,7 +580,7 @@ class ClassifierDataFrame:
                                        columns=["class"]).reset_index(drop=True)
 
 
-""" Naive Bayes classifier that classifies documents into class values based on 
+""" Naive Bayes classifier that classifies documents into class values based on
 Bayes Rule
 """
 
@@ -593,6 +601,14 @@ class NaiveBayesClassifier(DocumentProcessing):
         self.parse_vocabulary()
         self.N = self.raw_data.shape[0]
         self.bernoulli_index = dict()
+
+    def save_model(self, filename):
+        pickle.dump(self, open(filename, "wb"))
+
+    def load_model(filename):
+        obj = pickle.load(open(filename, "rb"))
+        return obj
+    load_model = staticmethod(load_model)
 
     def consolidate_training_set(self):
         """
@@ -868,31 +884,20 @@ def recompile_pickles(test=False):
         pickle.dump(cl_df, open(general_loc+ "ClassifierDataFrame.p", "wb"))
         pickle.dump(nb, open(general_loc + "Naive_Bayes.p", "wb"))
 
+# if __name__ == '__main__':
+    # inv_index_vsm = InvertedIndex("documents", purpose="vsm")
+    # cl_df = inv_index_vsm.classifier_df
+    # nb = NaiveBayesClassifier(cl_df)
+    # nb.fit()
+    # nb.save_model("pickled_objects/Naive_Bayes.pickle")
+    # engine = SearchEngine(inv_index_vsm)
+    # engine.save_engine("pickled_objects/VSM_Search_Engine.pickle")
 
-
-if __name__ == "__main__":
-    nb = pickle.load(open("pickled_objects/Naive_Bayes.p", "rb"))
-    cldf = pickle.load(open("pickled_objects/ClassifierDataFrame.p", "rb"))
-    print(nb.conditional_probabilities["sport"].head(5))
-    df = cldf.df
-    print(df[df["class"] == "sport"].shape[0])
-    print(nb.conditional_probabilities["politics"].head(5))
-#     doc = """Savvy searchers fail to spot ads
-#
-# Internet search engine users are an odd mix of naive and sophisticated, suggests a report into search habits.
-#
-# The report by the US Pew Research Center reveals that 87% of searchers usually find what they were looking for when using a search engine. It also shows that few can spot the difference between paid-for results and organic ones. The report reveals that 84% of net users say they regularly use Google, Ask Jeeves, MSN and Yahoo when online.
-#
-# Almost 50% of those questioned said they would trust search engines much less, if they knew information about who paid for results was being hidden. According to figures gathered by the Pew researchers the average users spends about 43 minutes per month carrying out 34 separate searches and looks at 1.9 webpages for each hunt. A significant chunk of net users, 36%, carry out a search at least weekly and 29% of those asked only look every few weeks. For 44% of those questioned, the information they are looking for is critical to what they are doing and is information they simply have to find.
-#
-# Search engine users also tend to be very loyal and once they have found a site they feel they can trust tend to stick with it. According to Pew Research 44% of searchers use just a single search engine, 48% use two or three and a small number, 7%, consult more than three sites. Tony Macklin, spokesman for Ask Jeeves, said the results reflected its own research which showed that people use different search engines because the way the sites gather information means they can provide different results for the same query. Despite this liking for search sites half of those questioned said they could get the same information via other routes. A small number, 17%, said they wouldn't really miss search engines if they did not exist. The remaining 33% said they could not live without search sites. More than two-thirds of those questioned, 68%, said they thought that the results they were presented with were a fair and unbiased selection of the information on a topic that can be found on the net. Alongside the growing sophistication of net users is a lack of awareness about paid-for results that many search engines provide alongside lists of websites found by indexing the web. Of those asked, 62% were unaware that someone has paid for some of the results they see when they carry out a search. Only 18% of all searchers say they can tell which results are paid for and which are not. Said the Pew report: "This finding is ironic, since nearly half of all users say they would stop using search engines if they thought engines were not being clear about how they presented paid results." Commenting Mr Macklin said sponsored results must be clearly marked and though they might help with some queries user testing showed that people need to be able to spot the difference.
-# """
-#     result = nb.predict_single(doc, mode="b")
-#     print(result)
 
 def run(mode, input):
-    elif mode == "--nb":
-        nb_model = pickle.load(open("pickled_objects/Naive_Bayes.p", "rb"))
+    if mode == "--nb":
+        nb_model = NaiveBayesClassifier.load_model(
+            "pickled_objects/Naive_Bayes.pickle")
         document_name = input
         doc_text = open(document_name, "r").read()
         prediction = nb_model.predict_single(doc_text, mode="m")
@@ -905,8 +910,8 @@ def run(mode, input):
         return prediction
         # print("Prediction: {}".format(prediction))
     elif mode == "--bs":
-        search_engine = pickle.load(
-            open("pickled_objects/Boolean_Search_Engine.p", "rb"))
+        search_engine = SearchEngine.load_engine(
+            filename="pickled_objects/Boolean_Search_Engine.pickle")
         query = input
         results = search_engine.boolean_and_query(query)
         with open("query_result.txt", "w+") as handle:
@@ -922,8 +927,7 @@ def run(mode, input):
                          (len(results)))
         return results
     elif mode == "--ps":
-        search_engine = pickle.load(
-            open("pickled_objects/Boolean_Search_Engine.p", "rb"))
+        search_engine = SearchEngine.load_engine("pickled_objects/Boolean_Search_Engine.pickle")
         query = input
         results = search_engine.positional_search(query)
         with open("query_result.txt", "w+") as handle:
@@ -940,8 +944,8 @@ def run(mode, input):
                          (len(results)))
         return results
     elif mode == "--vsm":
-        search_engine = pickle.load(
-            open("pickled_objects/VSM_Search_Engine.p", "rb"))
+        search_engine = SearchEngine.load_engine(
+            "pickled_objects/VSM_Search_Engine.pickle")
         query = input
         results = search_engine.ranked_search(query)
         with open("query_result.txt", "w+") as handle:
