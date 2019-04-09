@@ -17,13 +17,13 @@ def results():
         query = user_input["query"]
         print(query)
         #results = search("--bs", query)
-        results = search_engine.run("--bs", query)
+        results, documents = search_engine.run("--bs", query)
         with open("query_result.txt", "w+") as handle:
             result_dict = {}
             for result in results:
                 print(result.id)
-                print(search_engine.documents[result.id])
-                result_dict[result.id] = search_engine.documents[result.id]
+                print(documents[result.id])
+                result_dict[result.id] = documents[result.id]
     return render_template('results.html', result=result_dict)
 
 if __name__ == '__main__':
