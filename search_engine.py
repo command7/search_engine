@@ -579,9 +579,6 @@ class ClassifierDataFrame:
             self.y_test = pd.DataFrame(np.reshape(self.target.loc[test_index].values, (-1, 1)),
                                        columns=["class"]).reset_index(drop=True)
 
-    def compile_id_matching(self):
-
-
 
 """ Naive Bayes classifier that classifies documents into class values based on
 Bayes Rule
