@@ -961,7 +961,7 @@ def train_all_models():
     boolean_search_engine = SearchEngine(boolean_inv_index)
     VSM_search_engine = SearchEngine(vsm_inv_index)
     cl_df = vsm_inv_index.classifier_df
-    nb = NaiveBayesClassifier(vsm_inv_index)
+    nb = NaiveBayesClassifier(cl_df)
     nb.fit()
     knn = KNN(VSM_search_engine, cl_df)
     knn.fit()
