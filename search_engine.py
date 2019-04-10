@@ -855,9 +855,19 @@ class NaiveBayesClassifier(DocumentProcessing):
 
 
 class KNN(DocumentProcessing):
-    def __init__(self, vsm_engine, id_matching):
+    def __init__(self, vsm_engine, cl_df):
         self.search_engine = vsm_engine
-        self.id_matching = id_matching
+        self.classifier_df = cl_df
+        self.id_matching = None
+
+    # def fit(self):
+    #     consolidated_train_set = pd.concat([self.classifier_df.X_train,
+    #                                         self.classifier_df.y_train],
+    #                                        axis=1)
+    #     documents = self.search_engine.documents
+    #     for row in consolidated_train_set.iterrows():
+    #         doc_id = documents.index(row[1])
+    #         self.id_matching[doc_id] = row[2]
 
     def predict_single(self, document):
         class_value_counts = dict()
@@ -870,6 +880,14 @@ class KNN(DocumentProcessing):
             else:
                 class_value_counts[class_] = 1
         return max(class_value_counts, key=class_value_counts.get)
+
+    def save_model(self, filename):
+        pickle.dump(self, open(filename, "wb"))
+
+    def load_model(filename):
+        obj = pickle.load(open(filename, "rb"))
+        return obj
+    load_model = staticmethod(load_model)
 
 
 def run(mode, input):
@@ -922,6 +940,8 @@ def run(mode, input):
             handle.write("Documents IDs : \n {}".format(results))
         return results, search_engine.documents
 
+
+
 # def train_all_models():
 #     boolean_inv_index = InvertedIndex("documents", purpose="bs")
 #     vsm_inv_index = InvertedIndex("documents", purpose="vsm")
@@ -930,11 +950,13 @@ def run(mode, input):
 #     cl_df = vsm_inv_index.classifier_df
 #     nb = NaiveBayesClassifier(vsm_inv_index)
 #     nb.fit()
-#     knn = KNN(VSM_search_engine, id_matching)
+#     knn = KNN(VSM_search_engine)
+#     knn.fit()
 #
 #     boolean_search_engine.save_engine()
 #     VSM_search_engine.save_engine()
 #     nb.save_model()
+#     knn.save_model()
 
 # if __name__ == '__main__':
 #     inv_index_boolean =
