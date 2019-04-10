@@ -579,6 +579,9 @@ class ClassifierDataFrame:
             self.y_test = pd.DataFrame(np.reshape(self.target.loc[test_index].values, (-1, 1)),
                                        columns=["class"]).reset_index(drop=True)
 
+    def compile_id_matching(self):
+
+
 
 """ Naive Bayes classifier that classifies documents into class values based on
 Bayes Rule
@@ -868,31 +871,6 @@ class KNN(DocumentProcessing):
                 class_value_counts[class_] = 1
         return max(class_value_counts, key=class_value_counts.get)
 
-def recompile_pickles(test=False):
-    inv_index = InvertedIndex(document_loc="documents", purpose="vsm")
-    cl_df = inv_index.classifier_df
-    nb = NaiveBayesClassifier(cl_df)
-    nb.fit()
-    test_loc = "test_objects/"
-    general_loc = "pickled_objects/"
-    if test:
-        pickle.dump(inv_index, open(test_loc+"Inverted_Index.p", "wb+"))
-        pickle.dump(cl_df, open(test_loc + "ClassifierDataFrame.p", "wb+"))
-        pickle.dump(nb, open(test_loc + "Naive_Bayes.p", "wb+"))
-    else:
-        pickle.dump(inv_index, open(general_loc + "Inverted_Index.p", "wb"))
-        pickle.dump(cl_df, open(general_loc+ "ClassifierDataFrame.p", "wb"))
-        pickle.dump(nb, open(general_loc + "Naive_Bayes.p", "wb"))
-
-# if __name__ == '__main__':
-    # inv_index_vsm = InvertedIndex("documents", purpose="vsm")
-    # cl_df = inv_index_vsm.classifier_df
-    # nb = NaiveBayesClassifier(cl_df)
-    # nb.fit()
-    # nb.save_model("pickled_objects/Naive_Bayes.pickle")
-    # engine = SearchEngine(inv_index_vsm)
-    # engine.save_engine("pickled_objects/VSM_Search_Engine.pickle")
-
 
 def run(mode, input):
     if mode == "--nb":
@@ -943,3 +921,27 @@ def run(mode, input):
                 handle.write(search_engine.documents[result] + "\n\n")
             handle.write("Documents IDs : \n {}".format(results))
         return results, search_engine.documents
+
+# def train_all_models():
+#     boolean_inv_index = InvertedIndex("documents", purpose="bs")
+#     vsm_inv_index = InvertedIndex("documents", purpose="vsm")
+#     boolean_search_engine = SearchEngine(boolean_inv_index)
+#     VSM_search_engine = SearchEngine(vsm_inv_index)
+#     cl_df = vsm_inv_index.classifier_df
+#     nb = NaiveBayesClassifier(vsm_inv_index)
+#     nb.fit()
+#     knn = KNN(VSM_search_engine, id_matching)
+#
+#     boolean_search_engine.save_engine()
+#     VSM_search_engine.save_engine()
+#     nb.save_model()
+
+# if __name__ == '__main__':
+#     inv_index_boolean =
+#     inv_index_vsm = InvertedIndex("documents", purpose="vsm")
+#     cl_df = inv_index_vsm.classifier_df
+#     nb = NaiveBayesClassifier(cl_df)
+#     nb.fit()
+#     nb.save_model("pickled_objects/Naive_Bayes.pickle")
+#     engine = SearchEngine(inv_index_vsm)
+#     engine.save_engine("pickled_objects/VSM_Search_Engine.pickle")
