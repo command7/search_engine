@@ -17,5 +17,4 @@ def remove_duplicates(dir_path):
 for class_dir in class_directories:
     current_dir = os.getcwd()
     doc_path = os.path.join(current_dir, "documents", class_dir)
-    print(doc_path)
     remove_duplicates(doc_path)
