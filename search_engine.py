@@ -131,6 +131,14 @@ class InvertedIndex(DocumentProcessing):
                     self.load_data(is_text=True)
             self.classifier_df.split_training_testing_set(t_size=0.1)
 
+    def save_index(self, filename):
+        pickle.dump(self, open(filename, "wb"))
+
+    def load_index(filename):
+        obj = pickle.load(open(filename, "rb"))
+        return obj
+    load_index = staticmethod(load_index)
+
     def load_data(self, directory, ignore_stopwords=True, is_text=False):
         """
         Go through each document in the directory specified
@@ -534,6 +542,14 @@ class ClassifierDataFrame:
         self.y_train = None
         self.X_test = None
         self.y_test = None
+
+    def save_dataframe(self, filename):
+        pickle.dump(self, open(filename, "wb"))
+
+    def load_dataframe(filename):
+        obj = pickle.load(open(filename, "rb"))
+        return obj
+    load_dataframe = staticmethod(load_dataframe)
 
     def add_document(self, file_name, class_value):
         """
@@ -947,13 +963,18 @@ def run(mode, input):
 #     cl_df = vsm_inv_index.classifier_df
 #     nb = NaiveBayesClassifier(vsm_inv_index)
 #     nb.fit()
-#     knn = KNN(VSM_search_engine)
+#     knn = KNN(VSM_search_engine, cl_df)
 #     knn.fit()
 #
-#     boolean_search_engine.save_engine()
-#     VSM_search_engine.save_engine()
-#     nb.save_model()
-#     knn.save_model()
+#     cl_df.save_dataframe("pickled_objects/Classifier_DF.pickle")
+#     boolean_inv_index.save_index(
+#         "pickled_objects/Boolean_Inverted_Index.pickle")
+#     boolean_search_engine.save_engine(
+#         "pickled_objects/Boolean_Search_Engine.pickle")
+#     vsm_inv_index.save_index("pickled_objects/VSM_Inverted_Index.pickle")
+#     VSM_search_engine.save_engine("pickled_objects/VSM_Search_Engine.pickle")
+#     nb.save_model("pickled_objects/Naive_Bayes.pickle")
+#     knn.save_model("pickled_objects/KNN.pickle")
 
 # if __name__ == '__main__':
 #     inv_index_boolean =
