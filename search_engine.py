@@ -955,26 +955,26 @@ def run(mode, input):
 
 
 
-# def train_all_models():
-#     boolean_inv_index = InvertedIndex("documents", purpose="bs")
-#     vsm_inv_index = InvertedIndex("documents", purpose="vsm")
-#     boolean_search_engine = SearchEngine(boolean_inv_index)
-#     VSM_search_engine = SearchEngine(vsm_inv_index)
-#     cl_df = vsm_inv_index.classifier_df
-#     nb = NaiveBayesClassifier(vsm_inv_index)
-#     nb.fit()
-#     knn = KNN(VSM_search_engine, cl_df)
-#     knn.fit()
-#
-#     cl_df.save_dataframe("pickled_objects/Classifier_DF.pickle")
-#     boolean_inv_index.save_index(
-#         "pickled_objects/Boolean_Inverted_Index.pickle")
-#     boolean_search_engine.save_engine(
-#         "pickled_objects/Boolean_Search_Engine.pickle")
-#     vsm_inv_index.save_index("pickled_objects/VSM_Inverted_Index.pickle")
-#     VSM_search_engine.save_engine("pickled_objects/VSM_Search_Engine.pickle")
-#     nb.save_model("pickled_objects/Naive_Bayes.pickle")
-#     knn.save_model("pickled_objects/KNN.pickle")
+def train_all_models():
+    boolean_inv_index = InvertedIndex("documents", purpose="bs")
+    vsm_inv_index = InvertedIndex("documents", purpose="vsm")
+    boolean_search_engine = SearchEngine(boolean_inv_index)
+    VSM_search_engine = SearchEngine(vsm_inv_index)
+    cl_df = vsm_inv_index.classifier_df
+    nb = NaiveBayesClassifier(vsm_inv_index)
+    nb.fit()
+    knn = KNN(VSM_search_engine, cl_df)
+    knn.fit()
+
+    cl_df.save_dataframe("pickled_objects/Classifier_DF.pickle")
+    boolean_inv_index.save_index(
+        "pickled_objects/Boolean_Inverted_Index.pickle")
+    boolean_search_engine.save_engine(
+        "pickled_objects/Boolean_Search_Engine.pickle")
+    vsm_inv_index.save_index("pickled_objects/VSM_Inverted_Index.pickle")
+    VSM_search_engine.save_engine("pickled_objects/VSM_Search_Engine.pickle")
+    nb.save_model("pickled_objects/Naive_Bayes.pickle")
+    knn.save_model("pickled_objects/KNN.pickle")
 
 # if __name__ == '__main__':
 #     inv_index_boolean =
