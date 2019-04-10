@@ -913,7 +913,7 @@ def run(mode, input):
         return prediction
     elif mode == "--knn":
         document_name = input
-        knn_model = pickle.load(open("pickled_objects/KNN_Classifier.p", "rb"))
+        knn_model = KNN.load_model("pickled_objects/KNN.pickle")
         prediction = knn_model.predict_single(document_name)
         return prediction
     elif mode == "--bs":
@@ -976,12 +976,4 @@ def train_all_models():
     nb.save_model("pickled_objects/Naive_Bayes.pickle")
     knn.save_model("pickled_objects/KNN.pickle")
 
-# if __name__ == '__main__':
-#     inv_index_boolean =
-#     inv_index_vsm = InvertedIndex("documents", purpose="vsm")
-#     cl_df = inv_index_vsm.classifier_df
-#     nb = NaiveBayesClassifier(cl_df)
-#     nb.fit()
-#     nb.save_model("pickled_objects/Naive_Bayes.pickle")
-#     engine = SearchEngine(inv_index_vsm)
-#     engine.save_engine("pickled_objects/VSM_Search_Engine.pickle")
+train_all_models()
