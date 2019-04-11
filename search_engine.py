@@ -952,6 +952,33 @@ def run(mode, input):
             handle.write("Documents IDs : \n {}".format(results))
         return results, search_engine.documents
 
+def split_write_docs(df, set_="train"):
+    class_values = ["entertainment", "politics", "business", "tech", "sport"]
+    total_docs = df.shape[0]
+    cur_doc_no = 0
+    for class_value in class_values:
+        root_dir = os.getcwd()
+        if set_ == "train":
+            current_dir = os.path.join(root_dir, "training_set")
+            if not os.path.exists(current_dir):
+                os.makedirs(current_dir)
+        else:
+            current_dir = os.path.join(root_dir, "testing_set")
+            if not os.path.exists(current_dir):
+                os.makedirs(current_dir)
+        class_dir = os.path.join(current_dir, class_value)
+        if not os.path.exists(class_dir):
+            os.makedirs(class_dir)
+        class_df = df[df["class"] == class_value]
+        for row in class_df.values:
+            cur_doc_no += 1
+            document_content = row[0]
+            file_name = str(cur_doc_no) +".txt"
+            file_loc = os.path.join(class_dir, file_name)
+            with open(file_loc, "w") as handle:
+                handle.write(document_content)
+            print("Completed {} out of {} documents".format(cur_doc_no, total_docs))
+
 
 
 def train_all_models():
