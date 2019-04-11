@@ -952,6 +952,7 @@ def run(mode, input):
             handle.write("Documents IDs : \n {}".format(results))
         return results, search_engine.documents
 
+
 def split_write_docs(df, set_="train"):
     class_values = ["entertainment", "politics", "business", "tech", "sport"]
     total_docs = df.shape[0]
@@ -980,16 +981,17 @@ def split_write_docs(df, set_="train"):
             print("Completed {} out of {} documents".format(cur_doc_no, total_docs))
 
 
-
 def train_all_models():
     boolean_inv_index = InvertedIndex("documents", purpose="bs")
     vsm_inv_index = InvertedIndex("documents", purpose="vsm")
     boolean_search_engine = SearchEngine(boolean_inv_index)
     VSM_search_engine = SearchEngine(vsm_inv_index)
+    knn_inv_index = InvertedIndex("training_set", purpose="vsm")
+    knn_engine = SearchEngine(knn_inv_index)
     cl_df = vsm_inv_index.classifier_df
     nb = NaiveBayesClassifier(cl_df)
     nb.fit()
-    knn = KNN(VSM_search_engine, cl_df)
+    knn = KNN(knn_engine, cl_df)
     knn.fit()
 
     cl_df.save_dataframe("pickled_objects/Classifier_DF.pickle")
@@ -1002,4 +1004,4 @@ def train_all_models():
     nb.save_model("pickled_objects/Naive_Bayes.pickle")
     knn.save_model("pickled_objects/KNN.pickle")
 
-train_all_models()
+# train_all_models()
