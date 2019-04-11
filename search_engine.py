@@ -96,8 +96,6 @@ preprocessing them. """
 
 
 class InvertedIndex(DocumentProcessing):
-    num_documents = 0
-
     def __init__(self, document_loc=None, purpose="bs",
                  is_dir=True, auto_load=True):
         """
@@ -109,6 +107,7 @@ class InvertedIndex(DocumentProcessing):
         :param is_dir: If the given document location is a directory.
         :param auto_load: If the documents should be automatically loaded.
         """
+        self.num_documents = 0
         self.documents = list()
         self.terms = list()
         self.posting_lists = list()
@@ -169,8 +168,8 @@ class InvertedIndex(DocumentProcessing):
         Assign a new unique document ID to the document
         :return: Unique Document ID
         """
-        InvertedIndex.num_documents += 1
-        return InvertedIndex.num_documents - 1
+        self.num_documents += 1
+        return self.num_documents - 1
 
     def parse_document(self, file_name, ignore_stopwords, is_text=False):
         """
