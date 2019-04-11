@@ -916,8 +916,7 @@ def run(mode, input):
         prediction = knn_model.predict_single(document_name)
         return prediction
     elif mode == "--bs":
-        search_engine = SearchEngine.load_engine(
-            filename="pickled_objects/Boolean_Search_Engine.pickle")
+        search_engine = SearchEngine.load_engine("pickled_objects/Boolean_Search_Engine.pickle")
         query = input
         results = search_engine.boolean_and_query(query)
         with open("query_result.txt", "w+") as handle:
