@@ -273,10 +273,10 @@ class InvertedIndex(DocumentProcessing):
                 indiv_doc.term_weight = tfidf
                 if indiv_doc.id in self.docLengths.keys():
                     self.docLengths[indiv_doc.id] += np.square(tfidf)
-                    self.docLengths[indiv_doc.id] += np.square(tfidf)
+                    # self.docLengths[indiv_doc.id] += np.square(tfidf)
                 else:
                     self.docLengths[indiv_doc.id] = np.square(tfidf)
-        for i in range(len(self.docLengths)):
+        for i in self.docLengths.keys():
             self.docLengths[i] = np.sqrt(self.docLengths[i])
 
     # Print out inverted index
@@ -871,7 +871,7 @@ class KNN(DocumentProcessing):
     def __init__(self, vsm_engine, cl_df):
         self.search_engine = vsm_engine
         self.classifier_df = cl_df
-        self.id_matching = None
+        self.id_matching = dict()
 
     def fit(self):
         consolidated_train_set = pd.concat([self.classifier_df.X_train,
