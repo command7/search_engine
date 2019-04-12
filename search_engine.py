@@ -131,9 +131,20 @@ class InvertedIndex(DocumentProcessing):
             self.classifier_df.split_training_testing_set(t_size=0.1)
 
     def save_index(self, filename):
+        """
+        Save Inverted Index as a pickle object to be retreived and reused later
+        :param filename: Intended name for the pickle file including
+        absolute path
+        :return: None
+        """
         pickle.dump(self, open(filename, "wb"))
 
     def load_index(filename):
+        """
+        Load Inverted Index from pickled objects
+        :param filename: Absolute path of pickled file
+        :return: Indexed Inverted Index.
+        """
         obj = pickle.load(open(filename, "rb"))
         return obj
     load_index = staticmethod(load_index)
@@ -518,9 +529,19 @@ class SearchEngine(DocumentProcessing):
         return intersect_documents
 
     def save_engine(self, filename):
+        """
+        Save Search Engine as pickled object
+        :param filename: Absolute path of Search Engine
+        :return: None
+        """
         pickle.dump(self, open(filename, "wb"))
 
     def load_engine(filename):
+        """
+        Load indexed search engine from a pickle file
+        :param filename: Absolute path of pickle file
+        :return: Indexed Search Engine
+        """
         obj = pickle.load(open(filename, "rb"))
         return obj
     load_engine = staticmethod(load_engine)
@@ -543,9 +564,20 @@ class ClassifierDataFrame:
         self.y_test = None
 
     def save_dataframe(self, filename):
+        """
+        Save Dataframe containing training and test set as a pickled object
+        :param filename: Absolute location of pickled file with intended
+        pickle file name
+        :return: None
+        """
         pickle.dump(self, open(filename, "wb"))
 
     def load_dataframe(filename):
+        """
+        Load Dataframe with testing and training set loaded
+        :param filename: Absolute location of pickled object
+        :return: Dataframe with training and testing set
+        """
         obj = pickle.load(open(filename, "rb"))
         return obj
     load_dataframe = staticmethod(load_dataframe)
@@ -618,9 +650,19 @@ class NaiveBayesClassifier(DocumentProcessing):
         self.bernoulli_index = dict()
 
     def save_model(self, filename):
+        """
+        Save Classifier as a pickled object
+        :param filename: Absolute path of destination with intended name
+        :return: None
+        """
         pickle.dump(self, open(filename, "wb"))
 
     def load_model(filename):
+        """
+        Load trained classifier
+        :param filename: Absolute location of pickled object
+        :return: Trained Naive Bayes classifier
+        """
         obj = pickle.load(open(filename, "rb"))
         return obj
     load_model = staticmethod(load_model)
@@ -873,6 +915,11 @@ class KNN(DocumentProcessing):
         self.id_matching = dict()
 
     def fit(self):
+        """
+        Consolidate training set from Classifer_DataFrame and compute id
+        matching from the search engine document index
+        :return: None
+        """
         consolidated_train_set = pd.concat([self.classifier_df.X_train,
                                             self.classifier_df.y_train],
                                            axis=1)
@@ -882,6 +929,12 @@ class KNN(DocumentProcessing):
             self.id_matching[doc_id] = row[1]
 
     def predict_single(self, document):
+        """
+        Use vector space model to retrieve closest documents and classify
+        new document based on majority of class values from k close documents.
+        :param document: Absolute path of document to be classified
+        :return: Class label predicted by the classifier
+        """
         class_value_counts = dict()
         doc_text = open(document, "r").read()
         nearest_docs = self.search_engine.ranked_search(doc_text, k=5)
@@ -894,15 +947,32 @@ class KNN(DocumentProcessing):
         return max(class_value_counts, key=class_value_counts.get)
 
     def save_model(self, filename):
+        """
+        Save trained model to a pickled object
+        :param filename: Absolute path of destination with intended filename
+        :return: None
+        """
         pickle.dump(self, open(filename, "wb"))
 
     def load_model(filename):
+        """
+        Load trained KNN model from pickle file
+        :param filename: Absolute path of pickled file
+        :return: Trained KNN classifier
+        """
         obj = pickle.load(open(filename, "rb"))
         return obj
     load_model = staticmethod(load_model)
 
 
 def run(mode, input):
+    """
+    Provide query or document to be searched or classified and retrieve
+    results using search engines and classifiers from this module
+    :param mode: Type of classifier or search algorithm
+    :param input: Query or document to be searched or classified
+    :return: Class label or retrieved documents
+    """
     if mode == "--nb":
         nb_model = NaiveBayesClassifier.load_model(
             "pickled_objects/Naive_Bayes.pickle")
@@ -953,6 +1023,12 @@ def run(mode, input):
 
 
 def split_write_docs(df, set_="train"):
+    """
+    Write documents from search engine's document attribute to directories
+    :param df: Classifier_DataFrame containing training and testing set
+    :param set_: Whether its a training set or testing set
+    :return: None
+    """
     class_values = ["entertainment", "politics", "business", "tech", "sport"]
     total_docs = df.shape[0]
     cur_doc_no = 0
@@ -981,6 +1057,13 @@ def split_write_docs(df, set_="train"):
 
 
 def train_all_models():
+    """
+    Index inverted indexes using documents.
+    Load Search Engines.
+    Train classifiers.
+    Save all indexes, search engines and models as pickled files
+    :return:
+    """
     boolean_inv_index = InvertedIndex("documents", purpose="bs")
     vsm_inv_index = InvertedIndex("documents", purpose="vsm")
     boolean_search_engine = SearchEngine(boolean_inv_index)
