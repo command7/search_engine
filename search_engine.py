@@ -1013,6 +1013,7 @@ def run(mode, input):
         return results, search_engine.documents
     elif mode == "--vsm":
         classifications = {
+            "all": [],
             "politics": [],
             "business": [],
             "sport": [],
@@ -1020,7 +1021,7 @@ def run(mode, input):
             "tech": []
         }
         nb = NaiveBayesClassifier.load_model("pickled_objects/Naive_Bayes.pickle")
-        knn_model = KNN.load_model("pickled_objects/KNN.pickle", is_dir=False)
+        knn_model = KNN.load_model("pickled_objects/KNN.pickle")
         search_engine = SearchEngine.load_engine(
             "pickled_objects/VSM_Search_Engine.pickle")
         query = input
@@ -1031,9 +1032,10 @@ def run(mode, input):
                 handle.write(search_engine.documents[result] + "\n\n")
             handle.write("Documents IDs : \n {}".format(results))
         for result in results:
+            classifications["all"].append(result)
             document_content = search_engine.documents[result]
             nb_class = nb.predict_single(document_content, mode="m")
-            knn_class = nb.predict_single(document_content)
+            knn_class = knn_model.predict_single(document_content)
             if nb_class == knn_class:
                 classifications[nb_class].append(result)
             else:

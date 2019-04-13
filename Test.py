@@ -2,19 +2,11 @@ import search_engine
 import pickle
 from search_engine import SearchEngine, InvertedIndex, DocumentProcessing, \
     Document, NaiveBayesClassifier, ClassifierDataFrame, KNN
+import time
 
-# and_query, and_docs = search_engine.run("--bs","Harry Potter "
-#                                                     "Aviator Vera Bafta Clive Owen Drake Helen")
-#
-# # Test positional query
-# pos_query, pos_docs = search_engine.run("--ps", "Harry Potter and the "
-#                                                 "prisoner of "
-#                                      "Azkaban")
-# # Test VSM query
-# vsm_query, vsm_docs = search_engine.run("--vsm", "Harry Aviator Vera")
-# Test Naive Bayes
-# nb_query = search_engine.run("--nb", "testing_set/sport/164.txt")
-# Test KNN
-knn_query = search_engine.run("--knn", "testing_set/sport/164.txt")
-
-print(knn_query)
+start_time = time.time()
+classifications, docs = search_engine.run("--vsm", "Harry Potter India")
+print("It takes {} seconds for one query".format(time.time() - start_time))
+all_ids = classifications["all"]
+for id in all_ids:
+    print(docs[id]+ "\n\n")
