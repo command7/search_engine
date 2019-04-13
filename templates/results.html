@@ -3,11 +3,26 @@
   <head>
     <meta charset="utf-8">
     <title></title>
+    <style>
+      .doc_button_class {
+        outline: none;
+        border: 0;
+        <!--height: 200px;-->
+        width: 200px;
+      }
+    </style>
   </head>
   <body>
     <h1> {% for key, value in result.items() %} </h1>
-    <h3> {{ key }} </h3>
-    <h4> {{ value }} </h4>
+    <!--<a href="<s:file:///R:/text_classification-master/test_documents/{{ key }}.txt" action="http://localhost:5000/resultContent" />"><h3> {{ key }} </h3></a>
+    <h4> {{ value[:100] }} </h4>
+  -->
+    <form action="http://localhost:5000/resultContent" method="POST">
+      <input size="150" class = "doc_button_class" name="doc"
+             value="{{ value }}"></input>
+      <input type="submit" name="docButton"
+             value="Show Document"/>
+    </form>
     {% endfor %}
     <!--<h1> Rishi </h1> -->
   </body>

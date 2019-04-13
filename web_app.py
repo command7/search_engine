@@ -2,6 +2,7 @@ from flask import Flask, render_template, request
 import search_engine
 import time
 from search_engine import SearchEngine, InvertedIndex, DocumentProcessing, Document, NaiveBayesClassifier, ClassifierDataFrame
+import sys
 
 app = Flask(__name__)
 
@@ -41,5 +42,12 @@ def results():
                 result_dict[result.id] = documents[result.id]
     return render_template('results.html', result=result_dict)
 
+@app.route("/resultContent", methods=['GET', 'POST'])
+def resultContent():
+    user_input = dict(request.form)
+    print(user_input, file=sys.stderr)
+    value = user_input["doc"]
+    return value
+
 if __name__ == '__main__':
-    app.run()
+    app.run(debug=True)

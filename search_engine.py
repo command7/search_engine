@@ -11,7 +11,7 @@ import pickle
 from sklearn.metrics import f1_score, precision_score, recall_score, \
     accuracy_score
 from sklearn.model_selection import StratifiedShuffleSplit
-import flask
+
 
 """
     Stores term weight, term frequency and document ids for
@@ -80,7 +80,6 @@ class DocumentProcessing():
                                    for word in preprocessed_tokens]
         return preprocessed_tokens
 
-    # Returns the postings list of a term
     def get_postings_list(self, term):
         """
         Retrieve postings list of a particular term
@@ -127,12 +126,12 @@ class InvertedIndex(DocumentProcessing):
                 if is_dir:
                     self.load_data(document_loc)
                 else:
-                    self.load_data(is_text=True)
+                    self.load_data(document_loc, is_text=True)
             self.classifier_df.split_training_testing_set(t_size=0.1)
 
     def save_index(self, filename):
         """
-        Save Inverted Index as a pickle object to be retreived and reused later
+        Save Inverted Index as a pickle object to be retrieved and reused later
         :param filename: Intended name for the pickle file including
         absolute path
         :return: None
@@ -283,13 +282,11 @@ class InvertedIndex(DocumentProcessing):
                 indiv_doc.term_weight = tfidf
                 if indiv_doc.id in self.docLengths.keys():
                     self.docLengths[indiv_doc.id] += np.square(tfidf)
-                    # self.docLengths[indiv_doc.id] += np.square(tfidf)
                 else:
                     self.docLengths[indiv_doc.id] = np.square(tfidf)
         for i in self.docLengths.keys():
             self.docLengths[i] = np.sqrt(self.docLengths[i])
 
-    # Print out inverted index
     def __repr__(self):
         """
         Representable form of inverted index
@@ -399,7 +396,7 @@ class SearchEngine(DocumentProcessing):
                 posting_list_two = self.get_postings_list(processed_query[1])
                 query_results = self.positional_intersect(posting_list_one,
                                                           posting_list_two)
-            elif (len(processed_query) > 2):
+            elif len(processed_query) > 2:
                 posting_list_one = self.get_postings_list(
                     processed_query.pop(0))
                 posting_list_two = self.get_postings_list(
@@ -426,7 +423,8 @@ class SearchEngine(DocumentProcessing):
         intersect_documents = []
         pointer_one = 0
         pointer_two = 0
-        while pointer_one < len(post_list_one) and pointer_two < len(post_list_two):
+        while pointer_one < len(post_list_one) and pointer_two < len(
+                post_list_two):
             if post_list_one[pointer_one].id == post_list_two[pointer_two].id:
                 intersect_documents.append(post_list_two[pointer_two])
                 pointer_one += 1
@@ -442,6 +440,7 @@ class SearchEngine(DocumentProcessing):
         Search for top 10 documents that match the query using Vector Space
         Model scores.
         :param query: Search query
+        :param k: number of documents to be retrieved
         :return: Top 10 documents that match the search criteria
         """
         vsm_scores = dict()
@@ -502,7 +501,7 @@ class SearchEngine(DocumentProcessing):
         pointer_two = 0
         while pointer_one < len(post_list_one) and \
                 pointer_two < len(post_list_two):
-            if (post_list_one[pointer_one].id == post_list_two[pointer_two].id):
+            if post_list_one[pointer_one].id == post_list_two[pointer_two].id:
                 position_list_1 = post_list_one[pointer_one].positions
                 position_list_2 = post_list_two[pointer_two].positions
                 pos_point_1 = 0
@@ -522,7 +521,7 @@ class SearchEngine(DocumentProcessing):
                     pos_point_1 += 1
                 pointer_one += 1
                 pointer_two += 1
-            elif (post_list_one[pointer_one].id > post_list_two[pointer_two].id):
+            elif post_list_one[pointer_one].id > post_list_two[pointer_two].id:
                 pointer_two += 1
             else:
                 pointer_one += 1
@@ -669,7 +668,7 @@ class NaiveBayesClassifier(DocumentProcessing):
 
     def consolidate_training_set(self):
         """
-        Combine target and features into a single dataframe.
+        Combine target and features into a single data frame.
         :return: None
         """
         consolidated_df = pd.concat([self.raw_training_documents,
@@ -878,9 +877,9 @@ class NaiveBayesClassifier(DocumentProcessing):
                                 word, class_value)
                             output += np.log(instance)
                         else:
-                            output += np.log(1 /
+                            output += np.log(1.0 /
                                              (self.class_vocab_count[
-                                                  class_value] + 1))
+                                                  class_value] + self.total_vocab_count))
                     maxima[class_value] = output
                 predictions.append(max(maxima, key=maxima.get))
             predictions_df = pd.DataFrame(
@@ -928,7 +927,7 @@ class KNN(DocumentProcessing):
             doc_id = documents.index(row[0])
             self.id_matching[doc_id] = row[1]
 
-    def predict_single(self, document):
+    def predict_single(self, document, is_dir=False):
         """
         Use vector space model to retrieve closest documents and classify
         new document based on majority of class values from k close documents.
@@ -936,7 +935,10 @@ class KNN(DocumentProcessing):
         :return: Class label predicted by the classifier
         """
         class_value_counts = dict()
-        doc_text = open(document, "r").read()
+        if is_dir == True:
+            doc_text = open(document, "r").read()
+        else:
+            doc_text = document
         nearest_docs = self.search_engine.ranked_search(doc_text, k=5)
         for doc_id in nearest_docs:
             class_ = self.id_matching[doc_id]
@@ -973,19 +975,19 @@ def run(mode, input):
     :param input: Query or document to be searched or classified
     :return: Class label or retrieved documents
     """
-    if mode == "--nb":
-        nb_model = NaiveBayesClassifier.load_model(
-            "pickled_objects/Naive_Bayes.pickle")
-        document_name = input
-        doc_text = open(document_name, "r").read()
-        prediction = nb_model.predict_single(doc_text, mode="m")
-        return prediction
-    elif mode == "--knn":
-        document_name = input
-        knn_model = KNN.load_model("pickled_objects/KNN.pickle")
-        prediction = knn_model.predict_single(document_name)
-        return prediction
-    elif mode == "--bs":
+    # if mode == "--nb":
+    #     nb_model = NaiveBayesClassifier.load_model(
+    #         "pickled_objects/Naive_Bayes.pickle")
+    #     document_name = input
+    #     doc_text = open(document_name, "r").read()
+    #     prediction = nb_model.predict_single(doc_text, mode="m")
+    #     return prediction
+    # elif mode == "--knn":
+    #     document_name = input
+    #     knn_model = KNN.load_model("pickled_objects/KNN.pickle")
+    #     prediction = knn_model.predict_single(document_name)
+    #     return prediction
+    if mode == "--bs":
         search_engine = SearchEngine.load_engine("pickled_objects/Boolean_Search_Engine.pickle")
         query = input
         results = search_engine.boolean_and_query(query)
@@ -1010,16 +1012,34 @@ def run(mode, input):
                          (len(results)))
         return results, search_engine.documents
     elif mode == "--vsm":
+        classifications = {
+            "politics": [],
+            "business": [],
+            "sport": [],
+            "entertainment": [],
+            "tech": []
+        }
+        nb = NaiveBayesClassifier.load_model("pickled_objects/Naive_Bayes.pickle")
+        knn_model = KNN.load_model("pickled_objects/KNN.pickle", is_dir=False)
         search_engine = SearchEngine.load_engine(
             "pickled_objects/VSM_Search_Engine.pickle")
         query = input
-        results = search_engine.ranked_search(query)
+        results = search_engine.ranked_search(query, k=50)
         with open("query_result.txt", "w+") as handle:
             for result in results:
                 handle.write("Document Number: {}\n".format(result))
                 handle.write(search_engine.documents[result] + "\n\n")
             handle.write("Documents IDs : \n {}".format(results))
-        return results, search_engine.documents
+        for result in results:
+            document_content = search_engine.documents[result]
+            nb_class = nb.predict_single(document_content, mode="m")
+            knn_class = nb.predict_single(document_content)
+            if nb_class == knn_class:
+                classifications[nb_class].append(result)
+            else:
+                classifications[nb_class].append(result)
+                classifications[knn_class].append(results)
+        return classifications, search_engine.documents
 
 
 def split_write_docs(df, set_="train"):
