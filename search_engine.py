@@ -1032,15 +1032,28 @@ def run(mode, input):
                 handle.write(search_engine.documents[result] + "\n\n")
             handle.write("Documents IDs : \n {}".format(results))
         for result in results:
-            classifications["all"].append(result)
             document_content = search_engine.documents[result]
-            nb_class = nb.predict_single(document_content, mode="m")
-            knn_class = knn_model.predict_single(document_content)
+            classifications["all"].append(result)
+            nb_classifications = pickle.load(open(
+                "pickled_objects/nb_classifications.pickle", "rb"))
+            nb_class = nb_classifications[document_content]
+            knn_classifications = pickle.load(open(
+                "pickled_objects/knn_classifications.pickle", "rb"))
+            knn_class = knn_classifications[document_content]
             if nb_class == knn_class:
                 classifications[nb_class].append(result)
             else:
                 classifications[nb_class].append(result)
-                classifications[knn_class].append(results)
+                classifications[knn_class].append(result)
+            # classifications["all"].append(result)
+            # document_content = search_engine.documents[result]
+            # nb_class = nb.predict_single(document_content, mode="m")
+            # knn_class = knn_model.predict_single(document_content)
+            # if nb_class == knn_class:
+            #     classifications[nb_class].append(result)
+            # else:
+            #     classifications[nb_class].append(result)
+            #     classifications[knn_class].append(results)
         return classifications, search_engine.documents
 
 
@@ -1109,3 +1122,4 @@ def train_all_models():
     knn.save_model("pickled_objects/KNN.pickle")
 
 # train_all_models()
+print(pd.__version__)
