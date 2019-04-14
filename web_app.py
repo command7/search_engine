@@ -8,6 +8,8 @@ app = Flask(__name__)
 
 results = {}
 list_values = []
+result_dict = {}
+html_file = ""
 
 @app.route("/")
 def root():
@@ -18,6 +20,8 @@ def allResults():
     global documents
     global results
     global list_values
+    global result_dict
+    global html_file
     if request.method == 'POST':
     #do something
         user_input = request.form
@@ -27,22 +31,23 @@ def allResults():
             starting_time = time.time()
             results, documents = search_engine.run("--bs", query)
             print("Time taken: {}".format(time.time() - starting_time))
-            result_dict = {}
             for result in results:
                 result_dict[result.id] = documents[result.id]
+            html_file = "booleanResults.html"
+            return render_template(html_file, result=result_dict)
         elif type == 'vsm':
             starting_time = time.time()
             results, documents = search_engine.run("--vsm", query)
             print("Time taken: {}".format(time.time() - starting_time))
             list_docid = []
             list_docid = results.get("all")
-            list_values = []
             if list_docid is None:
                 list_values.append("No document found.")
             else:
                 for l in list_docid:
                     list_values.append(documents[l])
-    return render_template('allResults.html', result=list_values)
+            html_file = "allResults.html"
+    return render_template(html_file, result=list_values)
 
 @app.route("/resultContent", methods=['GET', 'POST'])
 def resultContent():

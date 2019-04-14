@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+    <style>
+      .doc_button {
+        border: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <form action="http://localhost:5000/allResults" method="POST">
+      <input type="text" size="50px" name="query"/></br>
+      <input type="radio" name="search_type" value="bs">Boolean Search</input>
+      <input type="radio" name="search_type" value="vsm">Ranked Search (VSM)</input>
+      <input type="submit"/ value="Search">
+    </form>
+    {% for key, value in result.items() %}
+    <form action="http://localhost:5000/resultContent" method="POST">
+      <input size="100px" class="doc_button" name="doc" value="{{ value }}" readonly>
+      <input type="submit" value="Show Document"/></br>
+    </form>
+    {% endfor %}
+  </body>
+</html>
