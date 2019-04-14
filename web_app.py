@@ -1,18 +1,23 @@
 from flask import Flask, render_template, request
 import search_engine
 import time
-from search_engine import SearchEngine, InvertedIndex, DocumentProcessing, Document, NaiveBayesClassifier, ClassifierDataFrame
+from search_engine import SearchEngine, InvertedIndex, DocumentProcessing, Document, NaiveBayesClassifier, ClassifierDataFrame, KNN
 import sys
 
 app = Flask(__name__)
+
+results = {}
+list_values = []
 
 @app.route("/")
 def root():
     return render_template('home.html')
 
-@app.route("/results", methods=['GET', 'POST'])
-def results():
+@app.route("/allResults", methods=['GET', 'POST'])
+def allResults():
     global documents
+    global results
+    global list_values
     if request.method == 'POST':
     #do something
         user_input = request.form
@@ -29,25 +34,93 @@ def results():
             starting_time = time.time()
             results, documents = search_engine.run("--vsm", query)
             print("Time taken: {}".format(time.time() - starting_time))
-            result_dict = {}
-            for doc in results:
-                result_dict[doc] = documents[doc]
-        # no .pickle yet
-        elif type == 'nb':
-            starting_time = time.time()
-            results, documents = search_engine.run("--nb", query)
-            print("Time taken: {}".format(time.time() - starting_time))
-            result_dict = {}
-            for result in results:
-                result_dict[result.id] = documents[result.id]
-    return render_template('results.html', result=result_dict)
+            list_docid = []
+            list_docid = results.get("all")
+            list_values = []
+            if list_docid is None:
+                list_values.append("No document found.")
+            else:
+                for l in list_docid:
+                    list_values.append(documents[l])
+    return render_template('allResults.html', result=list_values)
 
 @app.route("/resultContent", methods=['GET', 'POST'])
 def resultContent():
-    user_input = dict(request.form)
-    print(user_input, file=sys.stderr)
-    value = user_input["doc"]
-    return value
+    if request.method == 'POST':
+        user_input = dict(request.form)
+        #print(user_input, file=sys.stderr)
+        value = user_input["doc"]
+        return value
+
+@app.route("/businessResults")
+def businessResults():
+    global results
+    global documents
+    list_docid = []
+    list_docid = results.get("business")
+    list_values = []
+    if list_docid is None:
+        list_values.append("No document found.")
+    else:
+        for l in list_docid:
+            list_values.append(documents[l])
+    return render_template('businessResults.html', result=list_values)
+
+@app.route("/entertainmentResults")
+def entertainmentResults():
+    global results
+    global documents
+    list_docid = []
+    list_docid = results.get("entertainment")
+    list_values = []
+    if list_docid is None:
+        list_values.append("No document found.")
+    else:
+        for l in list_docid:
+            list_values.append(documents[l])
+    return render_template('entertainmentResults.html', result=list_values)
+
+@app.route("/politicsResults")
+def politicsResults():
+    global results
+    global documents
+    list_docid = []
+    list_docid = results.get("politics")
+    list_values = []
+    if list_docid is None:
+        list_values.append("No document found.")
+    else:
+        for l in list_docid:
+            list_values.append(documents[l])
+    return render_template('politicsResults.html', result=list_values)
+
+@app.route("/sportResults")
+def sportResults():
+    global results
+    global documents
+    list_docid = []
+    list_docid = results.get("sport")
+    list_values = []
+    if list_docid is None:
+        list_values.append("No document found.")
+    else:
+        for l in list_docid:
+            list_values.append(documents[l])
+    return render_template('sportResults.html', result=list_values)
+
+@app.route("/technologyResults")
+def technologyResults():
+    global results
+    global documents
+    list_docid = []
+    list_docid = results.get("technology")
+    list_values = []
+    if list_docid is None:
+        list_values.append("No document found.")
+    else:
+        for l in list_docid:
+            list_values.append(documents[l])
+    return render_template('technologyResults.html', result=list_values)
 
 if __name__ == '__main__':
     app.run(debug=True)

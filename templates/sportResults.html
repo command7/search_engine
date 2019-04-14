@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+    <style>
+      .doc_button {
+        border: 0;
+      }
+      .container {
+        width: 80%;
+        margin: 0 auto;
+      }
+      header {
+        background: #777777;
+      }
+      header::after {
+        content: '';
+        display: table;
+        clear: both;
+      }
+      nav {
+        float:right;
+      }
+      nav ul {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+      nav li {
+        display: inline-block;
+        margin-left: 80px;
+      }
+      nav a {
+        text-decoration: none;
+        color: #000;
+        text-transform: uppercase;
+        font-size: 16px;
+      }
+      nav a:hover {
+        color: #FFF;
+      }
+    </style>
+  </head>
+  <body>
+    <form action="http://localhost:5000/allResults" method="POST">
+      <input type="text" size="50px" name="query"/></br>
+      <input type="radio" name="search_type" value="bs">Boolean Search</input>
+      <input type="radio" name="search_type" value="vsm">Ranked Search (VSM)</input>
+      <input type="submit"/ value="Search">
+    </form>
+    <header>
+      <div class="container">
+        <nav>
+          <ul>
+            <li><a href="{{ url_for('allResults') }}">All</a></li>
+            <li><a href="{{ url_for('businessResults') }}">Business</a></li>
+            <li><a href="{{ url_for('entertainmentResults') }}">Entertainment</a></li>
+            <li><a href="{{ url_for('politicsResults') }}">Politics</a></li>
+            <li><a href="{{ url_for('sportResults') }}">Sports</a></li>
+            <li><a href="{{ url_for('technologyResults') }}">Technology</a></li>
+          </ul>
+        </nav>
+      </div>
+    </header>
+    {% for value in result %}
+    <form action="http://localhost:5000/resultContent" method="POST">
+      <input size="100px" class="doc_button" name="doc" value="{{ value }}" readonly>
+      <input type="submit" value="Show Document"/></br>
+    </form>
+    {% endfor %}
+  </body>
+</html>

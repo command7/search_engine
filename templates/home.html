@@ -7,14 +7,27 @@
     {% else %}
       <title> Search Engine </title>
     {% endif %}
+    <style>
+    .center-div {
+      position: absolute;
+      margin: auto;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      width: 350px;
+      height: 100px;
+    }
+    </style>
   </head>
   <body>
-    <form action="http://localhost:5000/results" method="POST">
-      <input type="text" name="query"/>
-      <input type="radio" name="search_type" value="bs">Binary Search</input>
-      <input type="radio" name="search_type" value="vsm">VSM</input>
-      <input type="radio" name="search_type" value="nb">Naive Bayes</input>
-      <input type="submit"/ value="Search">
-    </form>
+    <div class="center-div">
+      <form action="http://localhost:5000/allResults" method="POST">
+        <input type="text" size="50px" name="query"/></br>
+        <input type="radio" name="search_type" value="bs">Boolean Search</input>
+        <input type="radio" name="search_type" value="vsm">Ranked Search (VSM)</input>
+        <input type="submit"/ value="Search">
+      </form>
+    </div>
   </body>
 </html>
