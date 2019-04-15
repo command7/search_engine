@@ -8,6 +8,12 @@
       <title> Search Engine </title>
     {% endif %}
     <style>
+      h1{
+        color:black;
+      }
+      span{
+        color:red;
+      }
     .center-div {
       position: absolute;
       margin: auto;
@@ -18,15 +24,38 @@
       width: 350px;
       height: 100px;
     }
+    body{
+      background-color: azure;
+      
+    }
+    #s {
+    width: 240px;
+    height: 32px;
+    line-height: 32px;
+    font-size: 18px;
+}
+    #rc {
+    border-radius: 25px;
+    border: 2px solid #609;
+    padding: 20px; 
+    width: 500px;
+    height: 5px;    
+}
+input[type=radio] {
+    border: 0px;
+    <!--width: 50%;-->
+
+}
     </style>
   </head>
   <body>
     <div class="center-div">
+        <h1 align="center"><span>Search</span> Wizard</h1>
       <form action="http://localhost:5000/allResults" method="POST">
-        <input type="text" size="50px" name="query"/></br>
+        <input id="rc" type="text" size="50px" name="query"/></br>
         <input type="radio" name="search_type" value="bs">Boolean Search</input>
         <input type="radio" name="search_type" value="vsm">Ranked Search (VSM)</input>
-        <input type="submit"/ value="Search">
+        <input id="s" type="submit"/ value="Search">
       </form>
     </div>
   </body>

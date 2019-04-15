@@ -12,7 +12,7 @@
         margin: 0 auto;
       }
       header {
-        background: #777777;
+        background: #FFA07A;
       }
       header::after {
         content: '';
@@ -33,6 +33,7 @@
       }
       nav a {
         text-decoration: none;
+        font-weight: bold;
         color: #000;
         text-transform: uppercase;
         font-size: 16px;
@@ -40,18 +41,39 @@
       nav a:hover {
         color: #FFF;
       }
+      body{
+      background-color: azure;
+    }
+    #l{
+      margin-left: 150px;
+    }
+    #s {
+    width: 240px;
+    height: 32px;
+    line-height: 32px;
+    font-size: 18px;
+}
+    #rc {
+    border-radius: 25px;
+    border: 2px solid #609;
+    padding: 20px; 
+    width: 500px;
+    height: 5px;    
+}
     </style>
   </head>
   <body>
+    <div align="center">
     <form action="http://localhost:5000/allResults" method="POST">
-      <input type="text" size="50px" name="query"/></br>
+      <input id="rc" type="text" size="50px" style="background-color: azure;"name="query"/></br>
       <input type="radio" name="search_type" value="bs">Boolean Search</input>
       <input type="radio" name="search_type" value="vsm">Ranked Search (VSM)</input>
-      <input type="submit"/ value="Search">
+      <input id="s" type="submit"/ value="Search">
     </form>
+    </div>
     <header>
       <div class="container">
-        <nav>
+        <p><nav>
           <ul>
             <li><a href="{{ url_for('allResults') }}">All</a></li>
             <li><a href="{{ url_for('businessResults') }}">Business</a></li>
@@ -60,14 +82,16 @@
             <li><a href="{{ url_for('sportResults') }}">Sports</a></li>
             <li><a href="{{ url_for('technologyResults') }}">Technology</a></li>
           </ul>
-        </nav>
+        </nav></p>
       </div>
     </header>
     {% for value in result %}
+    <div id="l">
     <form action="http://localhost:5000/resultContent" method="POST">
-      <input size="100px" class="doc_button" name="doc" value="{{ value }}" readonly>
-      <input type="submit" value="Show Document"/></br>
+      <p><input size="100px" class="doc_button" name="doc" value="{{ value }}" readonly>
+      <input type="submit" value="Show Document"/></br></p>
     </form>
+    </div>
     {% endfor %}
   </body>
 </html>

@@ -990,6 +990,13 @@ def run(mode, input):
     if mode == "--bs":
         search_engine = SearchEngine.load_engine("pickled_objects/Boolean_Search_Engine.pickle")
         query = input
+        results = list()
+        for q in query:
+            if q not in search_engine.terms:
+                doc_ = Document(0, 1)
+                results = [doc_]
+                temp_docs = ["No documents found"]
+                return results, temp_docs
         results = search_engine.boolean_and_query(query)
         with open("query_result.txt", "w+") as handle:
             for result in results:
@@ -1020,8 +1027,8 @@ def run(mode, input):
             "entertainment": [],
             "tech": []
         }
-        nb = NaiveBayesClassifier.load_model("pickled_objects/Naive_Bayes.pickle")
-        knn_model = KNN.load_model("pickled_objects/KNN.pickle")
+        # nb = NaiveBayesClassifier.load_model("pickled_objects/Naive_Bayes.pickle")
+        # knn_model = KNN.load_model("pickled_objects/KNN.pickle")
         search_engine = SearchEngine.load_engine(
             "pickled_objects/VSM_Search_Engine.pickle")
         query = input
@@ -1045,15 +1052,6 @@ def run(mode, input):
             else:
                 classifications[nb_class].append(result)
                 classifications[knn_class].append(result)
-            # classifications["all"].append(result)
-            # document_content = search_engine.documents[result]
-            # nb_class = nb.predict_single(document_content, mode="m")
-            # knn_class = knn_model.predict_single(document_content)
-            # if nb_class == knn_class:
-            #     classifications[nb_class].append(result)
-            # else:
-            #     classifications[nb_class].append(result)
-            #     classifications[knn_class].append(results)
         return classifications, search_engine.documents
 
 

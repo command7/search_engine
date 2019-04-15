@@ -118,7 +118,7 @@ def technologyResults():
     global results
     global documents
     list_docid = []
-    list_docid = results.get("technology")
+    list_docid = results.get("tech")
     list_values = []
     if list_docid is None:
         list_values.append("No document found.")
