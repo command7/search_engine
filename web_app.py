@@ -28,17 +28,20 @@ def allResults():
         query = user_input["query"]
         type = user_input["search_type"]
         if type == 'bs':
-            starting_time = time.time()
+            # starting_time = time.time()
             results, documents = search_engine.run("--bs", query)
-            print("Time taken: {}".format(time.time() - starting_time))
-            for result in results:
-                result_dict[result.id] = documents[result.id]
+            # print("Time taken: {}".format(time.time() - starting_time))
+            if results is not None:
+                for result in results:
+                    result_dict[result.id] = documents[result.id]
+            else:
+                result_dict[0] = "No document found"
             html_file = "booleanResults.html"
             return render_template(html_file, result=result_dict)
         elif type == 'vsm':
-            starting_time = time.time()
+            # starting_time = time.time()
             results, documents = search_engine.run("--vsm", query)
-            print("Time taken: {}".format(time.time() - starting_time))
+            # print("Time taken: {}".format(time.time() - starting_time))
             list_docid = []
             list_docid = results.get("all")
             if list_docid is None:
@@ -55,7 +58,7 @@ def resultContent():
         user_input = dict(request.form)
         #print(user_input, file=sys.stderr)
         value = user_input["doc"]
-        return value
+        return render_template('resultContent.html', result=value)
 
 @app.route("/businessResults")
 def businessResults():

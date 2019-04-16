@@ -2,59 +2,18 @@
 <html lang="en" dir="ltr">
   <head>
     <meta charset="utf-8">
-    {% if title %}
-      <title> {{ title }} </title>
-    {% else %}
-      <title> Search Engine </title>
-    {% endif %}
-    <style>
-      h1{
-        color:black;
-      }
-      span{
-        color:red;
-      }
-    .center-div {
-      position: absolute;
-      margin: auto;
-      top: 0;
-      right: 0;
-      bottom: 0;
-      left: 0;
-      width: 350px;
-      height: 100px;
-    }
-    body{
-      background-color: azure;
-      
-    }
-    #s {
-    width: 240px;
-    height: 32px;
-    line-height: 32px;
-    font-size: 18px;
-}
-    #rc {
-    border-radius: 25px;
-    border: 2px solid #609;
-    padding: 20px; 
-    width: 500px;
-    height: 5px;    
-}
-input[type=radio] {
-    border: 0px;
-    <!--width: 50%;-->
-
-}
-    </style>
+      <title> Search Wizard </title>
+      <link rel="stylesheet" type="text/css"
+            href="{{ url_for('static',filename='styles/home.css') }}">
   </head>
   <body>
-    <div class="center-div">
-        <h1 align="center"><span>Search</span> Wizard</h1>
+    <div>
+        <h1>Search Wizard</h1>
+        <h2>Search for news articles... </h2>
       <form action="http://localhost:5000/allResults" method="POST">
-        <input id="rc" type="text" size="50px" name="query"/></br>
-        <input type="radio" name="search_type" value="bs">Boolean Search</input>
-        <input type="radio" name="search_type" value="vsm">Ranked Search (VSM)</input>
+        <input id="search_box" type="text" size="50px" name="query" placeholder="Enter search query here"/></br>
+        <input class="radio_button" type="radio" name="search_type" value="bs">Boolean Search</input>
+        <input class="radio_button" type="radio" name="search_type" value="vsm" checked>Ranked Search (VSM)</input>
         <input id="s" type="submit"/ value="Search">
       </form>
     </div>

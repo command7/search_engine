@@ -1020,12 +1020,12 @@ def run(mode, input):
         return results, search_engine.documents
     elif mode == "--vsm":
         classifications = {
-            "all": [],
-            "politics": [],
-            "business": [],
-            "sport": [],
-            "entertainment": [],
-            "tech": []
+            "all": set(),
+            "politics": set(),
+            "business": set(),
+            "sport": set(),
+            "entertainment": set(),
+            "tech": set()
         }
         # nb = NaiveBayesClassifier.load_model("pickled_objects/Naive_Bayes.pickle")
         # knn_model = KNN.load_model("pickled_objects/KNN.pickle")
@@ -1040,7 +1040,7 @@ def run(mode, input):
             handle.write("Documents IDs : \n {}".format(results))
         for result in results:
             document_content = search_engine.documents[result]
-            classifications["all"].append(result)
+            classifications["all"].add(result)
             nb_classifications = pickle.load(open(
                 "pickled_objects/nb_classifications.pickle", "rb"))
             nb_class = nb_classifications[document_content]
@@ -1048,10 +1048,10 @@ def run(mode, input):
                 "pickled_objects/knn_classifications.pickle", "rb"))
             knn_class = knn_classifications[document_content]
             if nb_class == knn_class:
-                classifications[nb_class].append(result)
+                classifications[nb_class].add(result)
             else:
-                classifications[nb_class].append(result)
-                classifications[knn_class].append(result)
+                classifications[nb_class].add(result)
+                classifications[knn_class].add(result)
         return classifications, search_engine.documents
 
 
@@ -1120,4 +1120,4 @@ def train_all_models():
     knn.save_model("pickled_objects/KNN.pickle")
 
 # train_all_models()
-print(pd.__version__)
+# print(pd.__version__)

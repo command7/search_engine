@@ -2,77 +2,21 @@
 <html lang="en" dir="ltr">
   <head>
     <meta charset="utf-8">
-    <title></title>
-    <style>
-      .doc_button {
-        border: 0;
-      }
-      .container {
-        width: 80%;
-        margin: 0 auto;
-      }
-      header {
-        background: #FFA07A;
-      }
-      header::after {
-        content: '';
-        display: table;
-        clear: both;
-      }
-      nav {
-        float:right;
-      }
-      nav ul {
-        margin: 0;
-        padding: 0;
-        list-style: none;
-      }
-      nav li {
-        display: inline-block;
-        margin-left: 80px;
-      }
-      nav a {
-        text-decoration: none;
-        font-weight: bold;
-        color: #000;
-        text-transform: uppercase;
-        font-size: 16px;
-      }
-      nav a:hover {
-        color: #FFF;
-      }
-      body{
-      background-color: azure;
-    }
-    #l{
-      margin-left: 150px;
-    }
-    #s {
-    width: 240px;
-    height: 32px;
-    line-height: 32px;
-    font-size: 18px;
-}
-    #rc {
-    border-radius: 25px;
-    border: 2px solid #609;
-    padding: 20px; 
-    width: 500px;
-    height: 5px;    
-}
-    </style>
+    <title>Search Wizard</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='styles/display_result.css') }}">
   </head>
   <body>
-    <div align="center">
+    <header>
+    <div align="center" id="search_bar">
+    <h1>Search Wizard</h1>
     <form action="http://localhost:5000/allResults" method="POST">
-      <input id="rc" type="text" size="50px" style="background-color: azure;"name="query"/></br>
-      <input type="radio" name="search_type" value="bs">Boolean Search</input>
-      <input type="radio" name="search_type" value="vsm">Ranked Search (VSM)</input>
-      <input id="s" type="submit"/ value="Search">
+      <input id="search_box" type="text" size="50px" name="query"/></br>
+      <input class="radio_button" type="radio" name="search_type" value="bs"><span>Boolean Search</span></input>
+      <input class="radio_button" type="radio" name="search_type" value="vsm" checked><span>Ranked Search (VSM)</span></input>
+      <input type="submit"/ value="Search">
     </form>
     </div>
-    <header>
-      <div class="container">
+      <div class="nav_container">
         <p><nav>
           <ul>
             <li><a href="{{ url_for('allResults') }}">All</a></li>
@@ -85,13 +29,14 @@
         </nav></p>
       </div>
     </header>
+    <div id="all_documents">
     {% for value in result %}
-    <div id="l">
     <form action="http://localhost:5000/resultContent" method="POST">
-      <p><input size="100px" class="doc_button" name="doc" value="{{ value }}" readonly>
-      <input type="submit" value="Show Document"/></br></p>
+      <p><input size="100px" class="doc_text_box" name="doc" value="{{ value }}" readonly>
+      <input class="show_doc_button" type="submit" value="Show Document"/></br></p>
+      <hr>
     </form>
-    </div>
     {% endfor %}
+  </div>
   </body>
 </html>
