@@ -975,19 +975,16 @@ def run(mode, input):
     :param input: Query or document to be searched or classified
     :return: Class label or retrieved documents
     """
-    # if mode == "--nb":
-    #     nb_model = NaiveBayesClassifier.load_model(
-    #         "pickled_objects/Naive_Bayes.pickle")
-    #     document_name = input
-    #     doc_text = open(document_name, "r").read()
-    #     prediction = nb_model.predict_single(doc_text, mode="m")
-    #     return prediction
-    # elif mode == "--knn":
-    #     document_name = input
-    #     knn_model = KNN.load_model("pickled_objects/KNN.pickle")
-    #     prediction = knn_model.predict_single(document_name)
-    #     return prediction
+
     if mode == "--bs":
+        classifications = {
+            "all": set(),
+            "politics": set(),
+            "business": set(),
+            "sport": set(),
+            "entertainment": set(),
+            "tech": set()
+        }
         search_engine = SearchEngine.load_engine("pickled_objects/Boolean_Search_Engine.pickle")
         query = input
         results = list()
@@ -998,6 +995,7 @@ def run(mode, input):
                 temp_docs = ["No documents found"]
                 return results, temp_docs
         results = search_engine.boolean_and_query(query)
+
         with open("query_result.txt", "w+") as handle:
             for result in results:
                 handle.write("Document Number: {}\n".format(result.id))
@@ -1005,8 +1003,30 @@ def run(mode, input):
             handle.write("Documents IDs : \n {}".format([doc.id for doc in results]))
             handle.write("Total Number of Documents found: {}\n".format
                          (len(results)))
-        return results, search_engine.documents
+        for result in results:
+            document_content = search_engine.documents[result.id]
+            classifications["all"].add(result.id)
+            nb_classifications = pickle.load(open(
+                "pickled_objects/nb_classifications.pickle", "rb"))
+            nb_class = nb_classifications[document_content]
+            knn_classifications = pickle.load(open(
+                "pickled_objects/knn_classifications.pickle", "rb"))
+            knn_class = knn_classifications[document_content]
+            if nb_class == knn_class:
+                classifications[nb_class].add(result.id)
+            else:
+                classifications[nb_class].add(result.id)
+                classifications[knn_class].add(result.id)
+        return classifications, search_engine.documents
     elif mode == "--ps":
+        classifications = {
+            "all": set(),
+            "politics": set(),
+            "business": set(),
+            "sport": set(),
+            "entertainment": set(),
+            "tech": set()
+        }
         search_engine = SearchEngine.load_engine("pickled_objects/Boolean_Search_Engine.pickle")
         query = input
         results = search_engine.positional_search(query)
@@ -1017,7 +1037,21 @@ def run(mode, input):
             handle.write("Documents IDs : \n {}".format([doc.id for doc in results]))
             handle.write("Total Number of Documents found: {}\n".format
                          (len(results)))
-        return results, search_engine.documents
+        for result in results:
+            document_content = search_engine.documents[result.id]
+            classifications["all"].add(result.id)
+            nb_classifications = pickle.load(open(
+                "pickled_objects/nb_classifications.pickle", "rb"))
+            nb_class = nb_classifications[document_content]
+            knn_classifications = pickle.load(open(
+                "pickled_objects/knn_classifications.pickle", "rb"))
+            knn_class = knn_classifications[document_content]
+            if nb_class == knn_class:
+                classifications[nb_class].add(result.id)
+            else:
+                classifications[nb_class].add(result.id)
+                classifications[knn_class].add(result.id)
+        return classifications, search_engine.documents
     elif mode == "--vsm":
         classifications = {
             "all": set(),
