@@ -340,7 +340,9 @@ class SearchEngine(DocumentProcessing):
             if self.check_existence(token) is False:
                 all_terms_exist = False
         if all_terms_exist:
-            if len(processed_query) == 2:
+            if len(processed_query) == 1:
+                query_results = self.get_postings_list(processed_query[0])
+            elif len(processed_query) == 2:
                 posting_list_one = self.get_postings_list(processed_query[0])
                 posting_list_two = self.get_postings_list(processed_query[1])
                 query_results = self.merge_intersect(posting_list_one,
