@@ -987,13 +987,23 @@ def run(mode, input):
         }
         search_engine = SearchEngine.load_engine("pickled_objects/Boolean_Search_Engine.pickle")
         query = input
-        results = list()
-        for q in query:
+        processed_query = search_engine.pre_process(query,
+                                                    remove_stopwords=True,
+                                                    stemming=True)
+        all_terms_exists = True
+        for q in processed_query:
             if q not in search_engine.terms:
-                doc_ = Document(0, 1)
-                results = [doc_]
-                temp_docs = ["No documents found"]
-                return results, temp_docs
+                all_terms_exists = False
+                break
+        if len(processed_query) == 0 or all_terms_exists is False:
+            classifications["all"].add(0)
+            classifications["politics"].add(0)
+            classifications["business"].add(0)
+            classifications["sport"].add(0)
+            classifications["entertainment"].add(0)
+            classifications["tech"].add(0)
+            temp_docs = ["No documents found"]
+            return classifications, temp_docs
         results = search_engine.boolean_and_query(query)
 
         with open("query_result.txt", "w+") as handle:
@@ -1066,6 +1076,23 @@ def run(mode, input):
         search_engine = SearchEngine.load_engine(
             "pickled_objects/VSM_Search_Engine.pickle")
         query = input
+        existing_term = False
+        processed_query = search_engine.pre_process(query,
+                                                    remove_stopwords=False,
+                                                    stemming=True)
+        for q in processed_query:
+            if q in search_engine.terms:
+                existing_term = True
+                break
+        if (len(processed_query) == 0 or existing_term is False):
+            classifications["all"].add(0)
+            classifications["politics"].add(0)
+            classifications["business"].add(0)
+            classifications["sport"].add(0)
+            classifications["entertainment"].add(0)
+            classifications["tech"].add(0)
+            temp_docs = ["No documents found"]
+            return classifications, temp_docs
         results = search_engine.ranked_search(query, k=50)
         with open("query_result.txt", "w+") as handle:
             for result in results:

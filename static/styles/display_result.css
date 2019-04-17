@@ -3,6 +3,11 @@
   padding: 0;
 }
 
+body {
+    background-image: url(allResultsBg.jpg);
+    background-attachment: fixed;
+}
+
 #search_box {
   height: 25px;
   border-radius: 10px;
@@ -21,7 +26,7 @@ h1 {
 
 #search_bar {
   height: 200px;
-  background-image: url(all_doc_bg.jpg)
+  /*background-image: url(resultsBg.jpg);*/
 }
 
 .radio_button {
@@ -54,7 +59,7 @@ span {
   padding-top: 30px;
   padding-left: 40px;
   padding-right: 20px;
-  background-image: url(all_doc_bg.jpg);
+  /*background-image: url(resultsBg.jpg);*/
 }
 
 hr {
@@ -66,9 +71,6 @@ hr {
   margin: 0 auto;
 } */
 
-header {
-  background: black;
-}
 
 header::after {
   content: '';

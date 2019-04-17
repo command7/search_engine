@@ -23,33 +23,25 @@ def allResults():
     global result_dict
     global html_file
     if request.method == 'POST':
-    #do something
         user_input = request.form
         query = user_input["query"]
         type = user_input["search_type"]
         if type == 'bs':
             # starting_time = time.time()
             results, documents = search_engine.run("--bs", query)
-            # print("Time taken: {}".format(time.time() - starting_time))
-            if results is not None:
-                for result in results:
-                    result_dict[result.id] = documents[result.id]
-            else:
-                result_dict[0] = "No document found"
-            html_file = "booleanResults.html"
-            return render_template(html_file, result=result_dict)
         elif type == 'vsm':
             # starting_time = time.time()
             results, documents = search_engine.run("--vsm", query)
             # print("Time taken: {}".format(time.time() - starting_time))
-            list_docid = []
-            list_docid = results.get("all")
-            if list_docid is None:
-                list_values.append("No document found.")
-            else:
-                for l in list_docid:
-                    list_values.append(documents[l])
-            html_file = "allResults.html"
+        list_docid = []
+        list_docid = results["all"]
+        list_values = []
+        if list_docid is None:
+            list_values.append("No document found.")
+        else:
+            for l in list_docid:
+                list_values.append(documents[l])
+        html_file = "allResults.html"
     return render_template(html_file, result=list_values)
 
 @app.route("/resultContent", methods=['GET', 'POST'])

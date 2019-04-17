@@ -33,7 +33,7 @@
     {% for value in result %}
     <form action="http://localhost:5000/resultContent" method="POST">
       <p><input size="100px" class="doc_text_box" name="doc" value="{{ value }}" readonly>
-      <input class="doc_button" type="submit" value="Show Document"/></br></p>
+      <input type="image" src="{{ url_for('static',filename='styles/white_arrow.jpg') }}" width="30" height="30" alt="Show Document" /></br></p>
     </form>
     {% endfor %}
       </div>
