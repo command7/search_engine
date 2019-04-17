@@ -1,0 +1,22 @@
+body, html {
+  height: 100%;
+  margin: 0;
+  font-size: 0;
+}
+
+.bg {
+  background-image: url(red-background-book.jpg);
+  height: 100%;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  float: left;
+  filter: grayscale(1);
+}
+
+p {
+  font-size: 18px;
+  color: white;
+  margin: 25px;
+  margin-top: 30px;
+}
